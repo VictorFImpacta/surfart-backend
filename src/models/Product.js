@@ -53,10 +53,14 @@ class Product {
         }
     }
 
-    async getAll({ page = 1, limit = 10 }) {
+    async getAll({ page = 1, limit = 10, category = null}) {
         try {
 
-            const products = await ProductModel.paginate({}, { page, limit, select: selectString });
+            let query = {};
+
+            if(category) query = { category }
+
+            const products = await ProductModel.paginate(query, { page, limit, select: selectString });
             this.setResponse(products);
 
         } catch (error) {
