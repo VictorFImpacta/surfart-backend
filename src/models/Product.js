@@ -53,12 +53,13 @@ class Product {
         }
     }
 
-    async getAll({ page = 1, limit = 10, category = null}) {
+    async getAll({ page = 1, limit = 10, category = null, search = null }) {
         try {
 
             let query = {};
 
-            if(category) query = { category }
+            if (category) query.category = category;
+            if (search) query.title = {$regex: `.*${search}*.`, $options:"i"};
 
             const products = await ProductModel.paginate(query, { page, limit, select: selectString });
             this.setResponse(products);
@@ -69,7 +70,7 @@ class Product {
         } finally {
             return this.response();
         }
-    };
+    }
 
     async getById(id) {
         try {
