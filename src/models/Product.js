@@ -109,9 +109,11 @@ class Product {
     async update(id, data) {
         try {
 
+            id = parseInt(id);
+            
             formatRequest(data, true);
-            const updatedProduct = await ProductModel.findOneAndUpdate({ id }, data, { new: true });
-            updatedProduct = await ProductModel.findById(id);
+            let updatedProduct = await ProductModel.findOneAndUpdate({ id: id }, data, { new: true });
+            // updatedProduct = await ProductModel.findById(id);
             this.setResponse(updatedProduct);
 
         } catch (error) {
