@@ -1,4 +1,3 @@
-const addressTransformation = require('../data-transformation/Address');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
@@ -140,8 +139,8 @@ class Product {
                 return this.setResponse({ message: 'Customer not found' }, 404);
             }
 
-            let addressTransformed = addressTransformation(data);
-            addressTransformed = this.validate(addressTransformed, ['cep', 'address', 'number']);
+            const validateArray = ['cep', 'address', 'number', 'complement', 'neighborhood', 'location', 'state'];
+            const addressTransformed = this.validate(addressTransformed, validateArray);
 
             if (addressTransformed.isInvalid) {
                 return this.response();
@@ -154,7 +153,7 @@ class Product {
             this.setResponse(customerUpdated);
 
         } catch (error) {
-            // console.error('Catch_error: ', error);
+            console.error('Catch_error: ', error);
             this.setResponse(error, 500);
         } finally {
             return this.response();
