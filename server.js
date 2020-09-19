@@ -11,6 +11,7 @@ app.use(cors());
 dataBase.initializeDatabase();
 
 app.use('/api/products', require('./src/routes/ProductRouter'));
+app.use('/api/skus', require('./src/routes/SkuRouter'));
 app.use('/api/customers', require('./src/routes/CustomerRouter'));
 app.use('/api/categories', require('./src/routes/CategoryRouter'));
 app.use('/api/payments', require('./src/routes/PaymentsRouter'));

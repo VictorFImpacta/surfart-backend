@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
-const ProductModel = mongoose.model('Product');
+const SkuModel = mongoose.model('Sku');
 
 const selectString = '-_id -__v';
 
-class Product {
+class Sku {
 
     constructor() {
         this.result = [];
@@ -56,8 +56,8 @@ class Product {
     async getAll({ page = 1, limit = 10 }) {
         try {
 
-            const products = await ProductModel.paginate({}, { page, limit, select: selectString });
-            this.setResponse(products);
+            const skus = await SkuModel.paginate({}, { page, limit, select: selectString });
+            this.setResponse(skus);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -70,8 +70,8 @@ class Product {
     async getById(id) {
         try {
 
-            const product = await ProductModel.find({ id });
-            this.setResponse(product);
+            const sku = await SkuModel.find({ id });
+            this.setResponse(sku);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -90,8 +90,8 @@ class Product {
             }
 
             formatRequest(data);
-            const productCreated = await ProductModel.create(data);
-            this.setResponse(productCreated);
+            const skuCreated = await SkuModel.create(data);
+            this.setResponse(skuCreated);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -105,9 +105,9 @@ class Product {
         try {
 
             formatRequest(data, true);
-            const updatedProduct = await ProductModel.findOneAndUpdate({ id }, data, { new: true });
-            updatedProduct = await ProductModel.findById(id);
-            this.setResponse(updatedProduct);
+            const updatedSku = await SkuModel.findOneAndUpdate({ id }, data, { new: true });
+            updatedSku = await SkuModel.findById(id);
+            this.setResponse(updatedSku);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -120,7 +120,7 @@ class Product {
     async delete(id) {
         try {
 
-            const deletedProduct = await ProductModel.findOneAndDelete({ id });
+            const deletedProduct = await SkuModel.findOneAndDelete({ id });
             this.setResponse(deletedProduct);
 
         } catch (error) {
@@ -146,4 +146,4 @@ function formatRequest(data, isUpdated = false) {
     }
 }
 
-module.exports = Product;
+module.exports = Sku;
