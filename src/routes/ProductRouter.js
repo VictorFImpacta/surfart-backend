@@ -1,5 +1,6 @@
 require('../schemas/Product');
 require('../schemas/Customer');
+require('../schemas/Category');
 
 const express = require('express');
 const routes = express.Router();

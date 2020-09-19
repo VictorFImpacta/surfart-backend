@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
 const ProductModel = mongoose.model('Product');
+const CategoryModel = mongoose.model('Category');
 
 const selectString = '-_id -__v';
 
@@ -84,10 +85,13 @@ class Product {
     async create(data) {
         try {
 
-            const validProduct = this.validate(data, ['title', 'category', 'image']);
+            const validProduct = this.validate(data, ['title', 'categories', 'image']);
+
             if (validProduct.isInvalid) {
                 return;
             }
+
+            data.categories = (await CategoryModel.find({ id: data.categories })).map(item => item.name);
 
             formatRequest(data);
             const productCreated = await ProductModel.create(data);
