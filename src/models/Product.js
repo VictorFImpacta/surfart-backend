@@ -1,3 +1,4 @@
+const { query } = require('express');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
@@ -55,11 +56,18 @@ class Product {
         }
     }
 
-    async getAll({ page = 1, limit = 10 }) {
+    async getAll({ page = 1, limit = 10, category }) {
         try {
 
-            const products = await ProductModel.paginate({}, { page, limit, select: selectString });
-            this.setResponse(products.docs);
+            if (limit > 50) {
+                limit = 50;
+            }
+
+            const query = queryFormater({ page, limit, category });
+
+            const products = await ProductModel.aggregate(query);
+
+            this.setResponse(products);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -80,6 +88,7 @@ class Product {
             }
 
             const variants = await SkuModel.find({ product_id: id });
+
             product.variants = variants;
 
             this.setResponse(product);
@@ -101,7 +110,16 @@ class Product {
                 return this.response();
             }
 
-            data.categories = (await CategoryModel.find({ id: data.categories })).map(item => item.name);
+            let categories = await CategoryModel.find({ id: data.categories });
+            categories = categories.map(item => {
+                return {
+                    name: item.name,
+                    description: item.description,
+                    id: item.id,
+                }
+            });
+
+            data.categories = categories;
 
             formatRequest(data);
             const productCreated = await ProductModel.create(data);
@@ -126,6 +144,8 @@ class Product {
             }
 
             formatRequest(data, true);
+
+            data.categories = await CategoryModel.find({ id: data.categories });
 
             for (const prop in data) {
                 product[prop] = data[prop];
@@ -171,6 +191,38 @@ function formatRequest(data, isUpdated = false) {
     for (const prop in data) {
         if (!data[prop]) delete data[prop];
     }
+}
+
+function queryFormater({ page, limit, category }) {
+
+    const query = [];
+
+    if (category) {
+        query.push({
+            $match: {
+                'categories.name': String(category)
+            }
+        });
+    }
+
+    query.push({
+        $lookup: {
+            from: 'skus',
+            localField: 'id',
+            foreignField: 'product_id',
+            as: 'variants'
+        }
+    })
+
+    if (page > 1) {
+        query.push({
+            $skip: limit * (page - 1)
+        })
+    }
+
+    query.push({ $limit: Number(limit) });
+
+    return query;
 }
 
 module.exports = Product;

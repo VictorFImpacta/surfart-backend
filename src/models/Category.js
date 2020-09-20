@@ -56,6 +56,10 @@ class Category {
     async getAll({ page = 1, limit = 10 }) {
         try {
 
+            if (limit > 50) {
+                limit = 50;
+            }
+
             const categories = await CategoryModel.paginate({}, { page, limit, select: selectString });
             this.setResponse(categories.docs);
 

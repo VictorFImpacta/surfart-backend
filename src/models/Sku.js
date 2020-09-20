@@ -57,6 +57,10 @@ class Sku {
     async getAll({ page = 1, limit = 10 }) {
         try {
 
+            if (limit > 50) {
+                limit = 50;
+            }
+
             const skus = await SkuModel.paginate({}, { page, limit, select: selectString });
             this.setResponse(skus.docs);
 
