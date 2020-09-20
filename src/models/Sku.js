@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
 const SkuModel = mongoose.model('Sku');
+const ProductModel = mongoose.model('Product');
 
 const selectString = '-_id -__v';
 
@@ -56,8 +57,12 @@ class Sku {
     async getAll({ page = 1, limit = 10 }) {
         try {
 
+            if (limit > 50) {
+                limit = 50;
+            }
+
             const skus = await SkuModel.paginate({}, { page, limit, select: selectString });
-            this.setResponse(skus);
+            this.setResponse(skus.docs);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -70,7 +75,13 @@ class Sku {
     async getById(id) {
         try {
 
-            const sku = await SkuModel.find({ id });
+            const sku = await SkuModel.findOne({ id });
+
+            if (!sku) {
+                this.setResponse({ message: 'Sku was not found!' }, 400);
+                return this.response();
+            }
+
             this.setResponse(sku);
 
         } catch (error) {
@@ -84,9 +95,18 @@ class Sku {
     async create(data) {
         try {
 
-            const validProduct = this.validate(data, ['title', 'category', 'image']);
+            const validateArray = ['product_id', 'title', 'price', 'old_price', 'position', 'images', 'height', 'weight', 'quantity', 'images'];
+            const validProduct = this.validate(data, validateArray);
+
             if (validProduct.isInvalid) {
-                return;
+                return this.response();
+            }
+
+            const product = await ProductModel.findOne({ id: data.product_id });
+
+            if (!product) {
+                this.setResponse({ message: 'Product was not found' }, 400);
+                return this.response();
             }
 
             formatRequest(data);
@@ -104,10 +124,26 @@ class Sku {
     async update(id, data) {
         try {
 
+            if (!data.product_id) {
+                this.setResponse({ message: 'The fields are missing: product_id' }, 400);
+                return this.response();
+            }
+
+            const variant = await SkuModel.findOne({ id });
+
+            if (!variant) {
+                this.setResponse({ message: 'Sku was not found' }, 400);
+                return this.response();
+            }
+
             formatRequest(data, true);
-            const updatedSku = await SkuModel.findOneAndUpdate({ id }, data, { new: true });
-            updatedSku = await SkuModel.findById(id);
-            this.setResponse(updatedSku);
+
+            for (const prop in data) {
+                variant[prop] = data[prop];
+            };
+
+            const skuUpdated = await SkuModel.findOneAndUpdate({ id }, variant, { new: true });
+            this.setResponse(skuUpdated);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -120,8 +156,8 @@ class Sku {
     async delete(id) {
         try {
 
-            const deletedProduct = await SkuModel.findOneAndDelete({ id });
-            this.setResponse(deletedProduct);
+            const deletedSku = await SkuModel.findOneAndDelete({ id });
+            this.setResponse(deletedSku);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -134,11 +170,12 @@ class Sku {
 
 function formatRequest(data, isUpdated = false) {
     data.id = undefined;
-    data.rate_stars = undefined;
+    data.sku = undefined;
     data.created_at = undefined;
 
     if (isUpdated) {
         data.updated_at = undefined;
+        data.product_id = undefined;
     }
 
     for (const prop in data) {

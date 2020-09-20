@@ -6,6 +6,7 @@ const routes = express.Router();
 
 const SkuController = require('../controllers/Sku');
 
+// Sku Routes
 routes.get('/', SkuController.getAll);
 routes.get('/:id', SkuController.getById);
 routes.post('/', SkuController.create);

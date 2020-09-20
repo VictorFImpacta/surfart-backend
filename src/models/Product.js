@@ -1,7 +1,9 @@
+const { query } = require('express');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
 const ProductModel = mongoose.model('Product');
+const SkuModel = mongoose.model('Sku');
 const CategoryModel = mongoose.model('Category');
 
 const selectString = '-_id -__v';
@@ -54,10 +56,17 @@ class Product {
         }
     }
 
-    async getAll({ page = 1, limit = 10 }) {
+    async getAll({ page = 1, limit = 10, category }) {
         try {
 
-            const products = await ProductModel.paginate({}, { page, limit, select: selectString });
+            if (limit > 50) {
+                limit = 50;
+            }
+
+            const query = queryFormater({ page, limit, category });
+
+            const products = await ProductModel.aggregate(query);
+
             this.setResponse(products);
 
         } catch (error) {
@@ -71,7 +80,17 @@ class Product {
     async getById(id) {
         try {
 
-            const product = await ProductModel.find({ id });
+            const product = await ProductModel.findOne({ id });
+
+            if (!product) {
+                this.setResponse({ message: 'Product was not found!' }, 400);
+                return this.response();
+            }
+
+            const variants = await SkuModel.find({ product_id: id });
+
+            product.variants = variants;
+
             this.setResponse(product);
 
         } catch (error) {
@@ -85,13 +104,22 @@ class Product {
     async create(data) {
         try {
 
-            const validProduct = this.validate(data, ['title', 'categories', 'image']);
+            const validProduct = this.validate(data, ['title', 'categories']);
 
             if (validProduct.isInvalid) {
-                return;
+                return this.response();
             }
 
-            data.categories = (await CategoryModel.find({ id: data.categories })).map(item => item.name);
+            let categories = await CategoryModel.find({ id: data.categories });
+            categories = categories.map(item => {
+                return {
+                    name: item.name,
+                    description: item.description,
+                    id: item.id,
+                }
+            });
+
+            data.categories = categories;
 
             formatRequest(data);
             const productCreated = await ProductModel.create(data);
@@ -108,9 +136,22 @@ class Product {
     async update(id, data) {
         try {
 
+            const product = await ProductModel.findOne({ id });
+
+            if (!product) {
+                this.setResponse({ message: 'Product was not found' }, 400);
+                return this.response();
+            }
+
             formatRequest(data, true);
-            const updatedProduct = await ProductModel.findOneAndUpdate({ id }, data, { new: true });
-            updatedProduct = await ProductModel.findById(id);
+
+            data.categories = await CategoryModel.find({ id: data.categories });
+
+            for (const prop in data) {
+                product[prop] = data[prop];
+            };
+
+            const updatedProduct = await ProductModel.findOneAndUpdate({ id }, product, { new: true });
             this.setResponse(updatedProduct);
 
         } catch (error) {
@@ -137,7 +178,9 @@ class Product {
 }
 
 function formatRequest(data, isUpdated = false) {
+
     data.id = undefined;
+    data.__v = undefined;
     data.rate_stars = undefined;
     data.created_at = undefined;
 
@@ -148,6 +191,38 @@ function formatRequest(data, isUpdated = false) {
     for (const prop in data) {
         if (!data[prop]) delete data[prop];
     }
+}
+
+function queryFormater({ page, limit, category }) {
+
+    const query = [];
+
+    if (category) {
+        query.push({
+            $match: {
+                'categories.name': String(category)
+            }
+        });
+    }
+
+    query.push({
+        $lookup: {
+            from: 'skus',
+            localField: 'id',
+            foreignField: 'product_id',
+            as: 'variants'
+        }
+    })
+
+    if (page > 1) {
+        query.push({
+            $skip: limit * (page - 1)
+        })
+    }
+
+    query.push({ $limit: Number(limit) });
+
+    return query;
 }
 
 module.exports = Product;

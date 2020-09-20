@@ -3,7 +3,7 @@ const Sku = require('../models/Sku');
 module.exports = {
     async getAll(req, res) {
         const sku = new Sku();
-        const result = await sku.getAll(req.query);
+        const result = await sku.getAll(req.params);
         return res.status(result.statusCode).send(result.result);
     },
     async getById(req, res) {
@@ -22,8 +22,8 @@ module.exports = {
         return res.status(result.statusCode).send(result.result);
     },
     async delete(req, res) {
-        const product = new Sku();
-        const sku = await sku.delete(req.params.id);
+        const sku = new Sku();
+        const result = await sku.delete(req.params.id);
         return res.status(result.statusCode).send(result.result);
     }
 };

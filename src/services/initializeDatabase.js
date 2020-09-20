@@ -13,7 +13,7 @@ module.exports = {
                 console.log('\n');
                 console.log('=============================');
                 console.log("Banco conectado com sucesso!");
-                console.log('=============================');
+                console.log('Ambiente -> Production');
                 console.log('Rodando na porta: ', process.env.PORT || 3000);
                 console.log('=============================');
                 console.log('\n');
@@ -31,13 +31,11 @@ module.exports = {
                 useUnifiedTopology: true
             });
             mongoose.connection.on('connected', () => {
-                console.log('\n');
                 console.log('=============================');
-                console.log("Banco conectado com sucesso!");
-                console.log('=============================');
+                console.log('Banco conectado com sucesso!');
+                console.log('Ambiente -> Homolog');
                 console.log('Rodando na porta: ', process.env.PORT || 3000);
                 console.log('=============================');
-                console.log('\n');
             })
         } catch (err) {
             console.log(err);
@@ -55,7 +53,7 @@ module.exports = {
                 console.log('\n');
                 console.log('=============================');
                 console.log("Banco conectado com sucesso!");
-                console.log('=============================');
+                console.log('Ambiente -> Development');
                 console.log('Rodando na porta: ', process.env.PORT || 3000);
                 console.log('=============================');
                 console.log('\n');
