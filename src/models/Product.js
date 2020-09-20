@@ -63,11 +63,21 @@ class Product {
                 limit = 50;
             }
 
+            const total = await ProductModel.find().count();
+
             const query = queryFormater({ page, limit, category });
 
             const products = await ProductModel.aggregate(query);
 
-            this.setResponse(products);
+            const response = {
+                docs: products,
+                total,
+                limit,
+                page,
+                pages: Math.round(total / limit)
+            }
+
+            this.setResponse(response);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -181,11 +191,12 @@ function formatRequest(data, isUpdated = false) {
 
     data.id = undefined;
     data.__v = undefined;
-    data.rate_stars = undefined;
     data.created_at = undefined;
 
     if (isUpdated) {
         data.updated_at = undefined;
+    } else {
+        data.rate_stars = undefined;
     }
 
     for (const prop in data) {

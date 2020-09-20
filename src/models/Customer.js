@@ -58,8 +58,8 @@ class Product {
                 limit = 50;
             }
 
-            const customers = await CustomerModel.paginate({}, { page, limit, select: selectString });
-            this.setResponse(customers.docs);
+            const customers = await CustomerModel.paginate({}, { page: Number(page), limit: Number(limit), select: selectString });
+            this.setResponse(customers);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -107,9 +107,20 @@ class Product {
     async update(id, data) {
         try {
 
+            const customer = await CustomerModel.findOne({ id });
+
+            if (!customer) {
+                this.setResponse({ message: 'Customer was not found' }, 400);
+                return this.response();
+            }
+
             formatRequest(data, true);
-            let updatedCustomer = await CustomerModel.findOneAndUpdate({ id }, data, { new: true });
-            updatedCustomer = await CustomerModel.findById(id);
+
+            for (const prop in data) {
+                customer[prop] = data[prop];
+            };
+
+            const updatedCustomer = await CustomerModel.findOneAndUpdate({ id }, customer, { new: true });
             this.setResponse(updatedCustomer);
 
         } catch (error) {

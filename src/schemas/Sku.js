@@ -28,10 +28,6 @@ const SkuSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    position: {
-        type: Number,
-        required: true
-    },
     ean: {
         type: Number,
         required: false

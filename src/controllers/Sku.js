@@ -3,7 +3,7 @@ const Sku = require('../models/Sku');
 module.exports = {
     async getAll(req, res) {
         const sku = new Sku();
-        const result = await sku.getAll(req.params);
+        const result = await sku.getAll(req.query);
         return res.status(result.statusCode).send(result.result);
     },
     async getById(req, res) {

@@ -61,8 +61,8 @@ class Sku {
                 limit = 50;
             }
 
-            const skus = await SkuModel.paginate({}, { page, limit, select: selectString });
-            this.setResponse(skus.docs);
+            const skus = await SkuModel.paginate({}, { page: Number(page), limit: Number(limit), select: selectString });
+            this.setResponse(skus);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -95,7 +95,7 @@ class Sku {
     async create(data) {
         try {
 
-            const validateArray = ['product_id', 'title', 'price', 'old_price', 'position', 'images', 'height', 'weight', 'quantity', 'images'];
+            const validateArray = ['product_id', 'title', 'price', 'old_price', 'images', 'height', 'weight', 'quantity', 'images'];
             const validProduct = this.validate(data, validateArray);
 
             if (validProduct.isInvalid) {
@@ -123,11 +123,6 @@ class Sku {
 
     async update(id, data) {
         try {
-
-            if (!data.product_id) {
-                this.setResponse({ message: 'The fields are missing: product_id' }, 400);
-                return this.response();
-            }
 
             const variant = await SkuModel.findOne({ id });
 

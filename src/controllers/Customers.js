@@ -3,7 +3,7 @@ const Customer = require('../models/Customer');
 module.exports = {
     async getAll(req, res) {
         const customer = new Customer();
-        const result = await customer.getAll(req.query);
+        const result = await customer.getAll(req.params);
         return res.status(result.statusCode).send(result.result);
     },
     async getById(req, res) {
