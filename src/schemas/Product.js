@@ -12,8 +12,13 @@ const ProductSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+<<<<<<< HEAD
     categories: {
         type: [],
+=======
+    category: {
+        type: [Object],
+>>>>>>> c2fa13c6a7181921ac0b68d6c22b29d3162e7e27
         required: true
     },
     created_at: {
