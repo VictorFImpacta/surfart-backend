@@ -57,7 +57,7 @@ class Category {
         try {
 
             const categories = await CategoryModel.paginate({}, { page, limit, select: selectString });
-            this.setResponse(categories);
+            this.setResponse(categories.docs);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -92,7 +92,7 @@ class Category {
 
             const categories = await CategoryModel.find({ name: data.name });
 
-            if (!categories) {
+            if (categories) {
                 this.setResponse({ message: `Category '${data.name}' already exists` }, 400);
                 return this.response();
             };

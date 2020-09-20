@@ -1,12 +1,12 @@
 require('../schemas/Product');
-require('../schemas/Customer');
 require('../schemas/Category');
+require('../schemas/Sku');
 
 const express = require('express');
 const routes = express.Router();
-
 const ProductController = require('../controllers/Products');
 
+// Product Routes
 routes.get('/', ProductController.getAll);
 routes.get('/:id', ProductController.getById);
 routes.post('/', ProductController.create);

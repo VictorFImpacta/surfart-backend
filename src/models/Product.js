@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
 const ProductModel = mongoose.model('Product');
+const SkuModel = mongoose.model('Sku');
 const CategoryModel = mongoose.model('Category');
 
 const selectString = '-_id -__v';
@@ -58,7 +59,7 @@ class Product {
         try {
 
             const products = await ProductModel.paginate({}, { page, limit, select: selectString });
-            this.setResponse(products);
+            this.setResponse(products.docs);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -71,7 +72,16 @@ class Product {
     async getById(id) {
         try {
 
-            const product = await ProductModel.find({ id });
+            const product = await ProductModel.findOne({ id });
+
+            if (!product) {
+                this.setResponse({ message: 'Product was not found!' }, 400);
+                return this.response();
+            }
+
+            const variants = await SkuModel.find({ product_id: id });
+            product.variants = variants;
+
             this.setResponse(product);
 
         } catch (error) {
@@ -85,10 +95,10 @@ class Product {
     async create(data) {
         try {
 
-            const validProduct = this.validate(data, ['title', 'categories', 'image']);
+            const validProduct = this.validate(data, ['title', 'categories']);
 
             if (validProduct.isInvalid) {
-                return;
+                return this.response();
             }
 
             data.categories = (await CategoryModel.find({ id: data.categories })).map(item => item.name);
@@ -108,9 +118,20 @@ class Product {
     async update(id, data) {
         try {
 
+            const product = await ProductModel.findOne({ id });
+
+            if (!product) {
+                this.setResponse({ message: 'Product was not found' }, 400);
+                return this.response();
+            }
+
             formatRequest(data, true);
-            const updatedProduct = await ProductModel.findOneAndUpdate({ id }, data, { new: true });
-            updatedProduct = await ProductModel.findById(id);
+
+            for (const prop in data) {
+                product[prop] = data[prop];
+            };
+
+            const updatedProduct = await ProductModel.findOneAndUpdate({ id }, product, { new: true });
             this.setResponse(updatedProduct);
 
         } catch (error) {
@@ -137,7 +158,9 @@ class Product {
 }
 
 function formatRequest(data, isUpdated = false) {
+
     data.id = undefined;
+    data.__v = undefined;
     data.rate_stars = undefined;
     data.created_at = undefined;
 

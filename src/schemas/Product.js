@@ -6,7 +6,7 @@ mongooseAutoIncrement.initialize(mongoose.connection);
 
 const ProductSchema = new mongoose.Schema({
     id: {
-        type: Number,
+        type: Number
     },
     title: {
         type: String,
@@ -27,18 +27,10 @@ const ProductSchema = new mongoose.Schema({
     tags: {
         type: [String]
     },
-    image: {
-        type: String,
-        required: true
-    },
     rate_stars: {
         type: Number,
         required: false,
         default: 0
-    },
-    price: {
-        type: Number,
-        default: 100.00
     },
     variants: []
 });

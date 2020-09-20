@@ -55,7 +55,7 @@ class Product {
         try {
 
             const customers = await CustomerModel.paginate({}, { page, limit, select: selectString });
-            this.setResponse(customers);
+            this.setResponse(customers.docs);
 
         } catch (error) {
             console.error('Catch_error: ', error);
