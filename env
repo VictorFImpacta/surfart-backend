@@ -1,5 +1,0 @@
-ENV_MONGODB="mongodb+srv://surftartdev2020:6kO7oJlnFw2QWG27@surf-art-dev.h30ft.mongodb.net/<dbname>?retryWrites=true&w=majority"
-VIACEP="https://viacep.com.br/ws"
-PICPAY="https://appws.picpay.com/ecommerce/public/payments"
-PICPAY_TOKEN="9cfbe1d8-792d-4c89-89b8-a842e5393cf4"
-SELLER_TOKEN="49448e6c-c92c-4879-9364-645d00b4a391"
