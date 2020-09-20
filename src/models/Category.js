@@ -84,6 +84,19 @@ class Category {
     async create(data) {
         try {
 
+            const validCategories = this.validate(data, ['name', 'description']);
+
+            if (validCategories.isInvalid) {
+                return this.response();
+            }
+
+            const categories = await CategoryModel.find({ name: data.name });
+
+            if (!categories) {
+                this.setResponse({ message: `Category '${data.name}' already exists` }, 400);
+                return this.response();
+            };
+
             formatRequest(data);
             const categoryCreated = await CategoryModel.create(data);
             this.setResponse(categoryCreated);

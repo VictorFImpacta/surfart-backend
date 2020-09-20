@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
 const ProductModel = mongoose.model('Product');
+const CategoryModel = mongoose.model('Category');
 
 const selectString = '-_id -__v';
 
@@ -53,15 +54,10 @@ class Product {
         }
     }
 
-    async getAll({ page = 1, limit = 10, category = null, search = null }) {
+    async getAll({ page = 1, limit = 10 }) {
         try {
 
-            let query = {};
-
-            if (category) query.category = category;
-            if (search) query.title = {$regex: `.*${search}*.`, $options:"i"};
-
-            const products = await ProductModel.paginate(query, { page, limit, select: selectString });
+            const products = await ProductModel.paginate({}, { page, limit, select: selectString });
             this.setResponse(products);
 
         } catch (error) {
@@ -70,7 +66,7 @@ class Product {
         } finally {
             return this.response();
         }
-    }
+    };
 
     async getById(id) {
         try {
@@ -89,10 +85,13 @@ class Product {
     async create(data) {
         try {
 
-            const validProduct = this.validate(data, ['title', 'category', 'image']);
+            const validProduct = this.validate(data, ['title', 'categories', 'image']);
+
             if (validProduct.isInvalid) {
                 return;
             }
+
+            data.categories = (await CategoryModel.find({ id: data.categories })).map(item => item.name);
 
             formatRequest(data);
             const productCreated = await ProductModel.create(data);
@@ -109,11 +108,9 @@ class Product {
     async update(id, data) {
         try {
 
-            id = parseInt(id);
-            
             formatRequest(data, true);
-            let updatedProduct = await ProductModel.findOneAndUpdate({ id: id }, data, { new: true });
-            // updatedProduct = await ProductModel.findById(id);
+            const updatedProduct = await ProductModel.findOneAndUpdate({ id }, data, { new: true });
+            updatedProduct = await ProductModel.findById(id);
             this.setResponse(updatedProduct);
 
         } catch (error) {

@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
-const CustomerModel = mongoose.model('Customer');
+const SkuModel = mongoose.model('Sku');
 
 const selectString = '-_id -__v';
 
-class Product {
+class Sku {
 
     constructor() {
         this.result = [];
@@ -40,6 +40,8 @@ class Product {
     }
 
     formatRequest(data, isUpdated = false) {
+        data.id = undefined;
+        data.rate_stars = undefined;
         data.created_at = undefined;
 
         if (isUpdated) {
@@ -54,8 +56,8 @@ class Product {
     async getAll({ page = 1, limit = 10 }) {
         try {
 
-            const customers = await CustomerModel.paginate({}, { page, limit, select: selectString });
-            this.setResponse(customers);
+            const skus = await SkuModel.paginate({}, { page, limit, select: selectString });
+            this.setResponse(skus);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -68,8 +70,8 @@ class Product {
     async getById(id) {
         try {
 
-            const customer = await CustomerModel.findById(id);
-            this.setResponse(customer);
+            const sku = await SkuModel.find({ id });
+            this.setResponse(sku);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -82,15 +84,14 @@ class Product {
     async create(data) {
         try {
 
-            const validCustomer = this.validate(data, ['first_name', 'last_name', 'email']);
-
-            if (validCustomer.isInvalid) {
-                return this.response();
+            const validProduct = this.validate(data, ['title', 'category', 'image']);
+            if (validProduct.isInvalid) {
+                return;
             }
 
             formatRequest(data);
-            const customerCreated = await CustomerModel.create(data);
-            this.setResponse(customerCreated);
+            const skuCreated = await SkuModel.create(data);
+            this.setResponse(skuCreated);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -104,9 +105,9 @@ class Product {
         try {
 
             formatRequest(data, true);
-            let updatedCustomer = await CustomerModel.findOneAndUpdate({ id }, data, { new: true });
-            updatedCustomer = await CustomerModel.findById(id);
-            this.setResponse(updatedCustomer);
+            const updatedSku = await SkuModel.findOneAndUpdate({ id }, data, { new: true });
+            updatedSku = await SkuModel.findById(id);
+            this.setResponse(updatedSku);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -119,7 +120,7 @@ class Product {
     async delete(id) {
         try {
 
-            const deletedProduct = await CustomerModel.findOneAndDelete({ id });
+            const deletedProduct = await SkuModel.findOneAndDelete({ id });
             this.setResponse(deletedProduct);
 
         } catch (error) {
@@ -129,41 +130,11 @@ class Product {
             return this.response();
         }
     };
-
-    async createAddress(id, data) {
-        try {
-
-            let customer = await this.getById(id);
-
-            if (customer.statusCode != 200) {
-                return this.setResponse({ message: 'Customer not found' }, 404);
-            }
-
-            const validateArray = ['cep', 'address', 'number', 'complement', 'neighborhood', 'location', 'state'];
-            const addressTransformed = this.validate(addressTransformed, validateArray);
-
-            if (addressTransformed.isInvalid) {
-                return this.response();
-            }
-
-            customer.result.address.push(addressTransformed);
-
-            const customerUpdated = await CustomerModel.findByIdAndUpdate(id, customer.result, { new: true });
-
-            this.setResponse(customerUpdated);
-
-        } catch (error) {
-            console.error('Catch_error: ', error);
-            this.setResponse(error, 500);
-        } finally {
-            return this.response();
-        }
-    }
 }
 
 function formatRequest(data, isUpdated = false) {
-    data.address = undefined;
-    data.admin = false;
+    data.id = undefined;
+    data.rate_stars = undefined;
     data.created_at = undefined;
 
     if (isUpdated) {
@@ -175,4 +146,4 @@ function formatRequest(data, isUpdated = false) {
     }
 }
 
-module.exports = Product;
+module.exports = Sku;
