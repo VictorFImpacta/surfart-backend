@@ -9,8 +9,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 
 // dataBase.initializeDatabase();
-dataBase.initializeDatabaseHomolog();
-// dataBase.initializeDatabaseDevelopment();
+dataBase.initializeDatabaseHomolog()
+    // dataBase.initializeDatabaseDevelopment();
 
 app.use('/api/products', require('./src/routes/ProductRouter'));
 app.use('/api/skus', require('./src/routes/SkuRouter'));
