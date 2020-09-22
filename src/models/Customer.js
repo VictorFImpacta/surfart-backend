@@ -244,7 +244,11 @@ function formatRequest(data, isUpdated = false) {
     data.address = undefined;
     data.admin = false;
     data.created_at = undefined;
-    data.password = undefined;
+
+    if (isUpdated) {
+        data.password = undefined;
+    }
+
     data.id = undefined;
     data.updated_at = undefined;
 

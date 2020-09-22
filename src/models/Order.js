@@ -82,13 +82,13 @@ class Order {
     async create(data) {
         try {
 
-            const validOrder = this.validate(data, ['customer', 'items', 'value', 'toDelivery', 'billing_address']);
+            const validOrder = this.validate(data, ['customer_id', 'items', 'value', 'toDelivery', 'billing_address']);
 
             if (validOrder.isInvalid) {
                 return this.response();
             }
 
-            const customerValidate = await validateCustomer.find(data);
+            const customerValidate = await validateCustomer(data.customer_id);
             if (customerValidate.isInvalid) {
                 return this.response();
             }
@@ -161,7 +161,7 @@ async function validateCustomer(customer_id) {
         return { isInvalid: true };
     }
 
-    return customer;
+    return customer.docs[0];
 
 }
 

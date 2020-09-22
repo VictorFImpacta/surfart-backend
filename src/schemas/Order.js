@@ -6,7 +6,7 @@ const OrderSchema = new mongoose.Schema({
     id: {
         type: Number
     },
-    customer: {
+    customer_id: {
         type: Object,
         required: true,
     },
