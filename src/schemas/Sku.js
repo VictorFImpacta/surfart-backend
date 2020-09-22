@@ -12,6 +12,9 @@ const SkuSchema = new mongoose.Schema({
     id: {
         type: Number
     },
+    description: {
+        type: String
+    },
     title: {
         type: String,
         required: true

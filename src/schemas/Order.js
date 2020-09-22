@@ -34,24 +34,21 @@ const OrderSchema = new mongoose.Schema({
         required: true
     },
     notes: {
-        type: String,
-        default: false
+        type: String
     },
     canceled: {
         type: Boolean,
         default: false
     },
     canceled_reason: {
-        type: String,
-        default: undefined
+        type: String
     },
     shipped: {
         type: Boolean,
         default: false
     },
     shipped_date: {
-        type: Date,
-        default: undefined
+        type: Date
     },
     created_at: {
         type: Date,

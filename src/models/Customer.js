@@ -1,5 +1,9 @@
+require('dotenv').config();
+
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const CustomerModel = mongoose.model('Customer');
 
@@ -86,7 +90,7 @@ class Product {
     async create(data) {
         try {
 
-            const validCustomer = this.validate(data, ['first_name', 'last_name', 'email']);
+            const validCustomer = this.validate(data, ['first_name', 'last_name', 'email', 'password']);
 
             if (validCustomer.isInvalid) {
                 return this.response();
@@ -94,14 +98,24 @@ class Product {
 
             formatRequest(data);
             const customerCreated = await CustomerModel.create(data);
-            this.setResponse(customerCreated);
+            customerCreated.password = undefined;
+
+            const token = `Bearer ${generateToken({ id: customer.id })}`;
+
+            this.setResponse({ customerCreated, token });
 
         } catch (error) {
+            if (error.errmsg && error.errmsg.includes('E11000')) {
+                return res.status(422).send({
+                    error: 'email already used'
+                });
+            }
             console.error('Catch_error: ', error);
             this.setResponse(error, 500);
         } finally {
             return this.response();
         }
+
     };
 
     async update(id, data) {

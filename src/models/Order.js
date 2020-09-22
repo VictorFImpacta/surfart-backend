@@ -76,7 +76,7 @@ class Order {
     async create(data) {
         try {
 
-            const validOrder = this.validate(data, ['customer_id', 'items', 'value', 'toDelivery', 'billing_address']);
+            const validOrder = this.validate(data, ['customer', 'items', 'value', 'toDelivery', 'billing_address,']);
 
             if (validOrder.isInvalid) {
                 return this.response();
