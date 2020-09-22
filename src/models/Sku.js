@@ -75,14 +75,14 @@ class Sku {
     async getById(id) {
         try {
 
-            const sku = await SkuModel.findOne({ id });
+            const sku = await SkuModel.paginate({ id }, { select: selectString });
 
-            if (!sku) {
+            if (!sku.docs.length) {
                 this.setResponse({ message: 'Sku was not found!' }, 400);
                 return this.response();
             }
 
-            this.setResponse(sku);
+            this.setResponse(sku.docs[0]);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -164,14 +164,11 @@ class Sku {
 }
 
 function formatRequest(data, isUpdated = false) {
+
     data.id = undefined;
     data.sku = undefined;
     data.created_at = undefined;
-
-    if (isUpdated) {
-        data.updated_at = undefined;
-        data.product_id = undefined;
-    }
+    data.product_id = undefined;
 
     for (const prop in data) {
         if (!data[prop]) delete data[prop];

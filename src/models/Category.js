@@ -74,8 +74,14 @@ class Category {
     async getById(id) {
         try {
 
-            const categories = await CategoryModel.find({ id });
-            this.setResponse(categories);
+            const categories = await CategoryModel.paginate({ id }, { select: selectString });
+
+            if (!categories.docs.length) {
+                this.setResponse({ message: 'Categories was not found!' }, 400);
+                return this.response();
+            }
+
+            this.setResponse(categories.docs[0]);
 
         } catch (error) {
             console.error('Catch_error: ', error);

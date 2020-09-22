@@ -90,9 +90,9 @@ class Product {
     async getById(id) {
         try {
 
-            const product = await ProductModel.findOne({ id });
+            const product = await ProductModel.paginate({ id }, { select: selectString });
 
-            if (!product) {
+            if (!product.docs.length) {
                 this.setResponse({ message: 'Product was not found!' }, 400);
                 return this.response();
             }
@@ -101,7 +101,7 @@ class Product {
 
             product.variants = variants;
 
-            this.setResponse(product);
+            this.setResponse(product.docs[0]);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -192,12 +192,7 @@ function formatRequest(data, isUpdated = false) {
     data.id = undefined;
     data.__v = undefined;
     data.created_at = undefined;
-
-    if (isUpdated) {
-        data.updated_at = undefined;
-    } else {
-        data.rate_stars = undefined;
-    }
+    data.updated_at = undefined;
 
     for (const prop in data) {
         if (!data[prop]) delete data[prop];

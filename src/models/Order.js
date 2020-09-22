@@ -62,8 +62,14 @@ class Order {
     async getById(id) {
         try {
 
-            const categories = await OrderModel.find({ id });
-            this.setResponse(categories);
+            const categories = await OrderModel.paginate({ id }, { select: selectString });
+
+            if (!categories.docs.length) {
+                this.setResponse({ message: 'Categories was not found!' }, 400);
+                return this.response();
+            }
+
+            this.setResponse(categories.docs[0]);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -186,10 +192,7 @@ function formatRequest(data, isUpdated = false) {
     data.price = undefined;
     data.updated_at = undefined;
     data.created_at = undefined;
-
-    if (isUpdated) {
-        data.updated_at = undefined;
-    }
+    data.updated_at = undefined;
 
     for (const prop in data) {
         if (!data[prop]) delete data[prop];

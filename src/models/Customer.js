@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 
 const CustomerModel = mongoose.model('Customer');
 
-const selectString = '-_id -__v';
+const selectString = '-_id -__v -password';
 
 class Customer {
 
@@ -108,8 +108,14 @@ class Customer {
     async getById(id) {
         try {
 
-            const customer = await CustomerModel.findById(id);
-            this.setResponse(customer);
+            const customer = await CustomerModel.paginate({ id }, { select: selectString });
+
+            if (!customer.docs.length) {
+                this.setResponse({ message: 'Customer was not found!' }, 400);
+                return this.response();
+            }
+
+            this.setResponse(customer.docs[0]);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -120,6 +126,8 @@ class Customer {
     };
 
     async create(data) {
+        let customer;
+
         try {
 
             const validCustomer = this.validate(data, ['first_name', 'last_name', 'email', 'password']);
@@ -129,18 +137,19 @@ class Customer {
             }
 
             formatRequest(data);
-            const customerCreated = await CustomerModel.create(data);
-            customerCreated.password = undefined;
+
+            customer = await CustomerModel.create(data);
+            customer.password = undefined;
 
             const token = `Bearer ${generateToken({ id: customer.id })}`;
-
-            this.setResponse({ customerCreated, token });
+            this.setResponse({ customer, token });
 
         } catch (error) {
             this.setResponse(error, 500);
             if (error.errmsg && error.errmsg.includes('E11000')) {
                 this.setResponse({ message: 'email already used' }, 400)
             }
+            await CustomerModel.findOneAndDelete({ id: customerCreated.id });
         } finally {
             return this.response();
         }
@@ -164,6 +173,8 @@ class Customer {
             };
 
             const updatedCustomer = await CustomerModel.findOneAndUpdate({ id }, customer, { new: true });
+            updatedCustomer.__v = undefined;
+
             this.setResponse(updatedCustomer);
 
         } catch (error) {
@@ -177,8 +188,10 @@ class Customer {
     async delete(id) {
         try {
 
-            const deletedProduct = await CustomerModel.findOneAndDelete({ id });
-            this.setResponse(deletedProduct);
+            const deletedCustomer = await CustomerModel.findOneAndDelete({ id });
+            deletedCustomer.password = undefined;
+            deletedCustomer.__v = undefined;
+            this.setResponse(deletedCustomer);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -219,14 +232,21 @@ class Customer {
     }
 }
 
+function generateToken(params = {}) {
+    return jwt.sign(params, process.env.SECRET, {
+        expiresIn: 86400
+    });
+}
+
 function formatRequest(data, isUpdated = false) {
+
+    data.historic = undefined;
     data.address = undefined;
     data.admin = false;
     data.created_at = undefined;
-
-    if (isUpdated) {
-        data.updated_at = undefined;
-    }
+    data.password = undefined;
+    data.id = undefined;
+    data.updated_at = undefined;
 
     for (const prop in data) {
         if (!data[prop]) delete data[prop];
