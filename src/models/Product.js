@@ -98,8 +98,7 @@ class Product {
             }
 
             const variants = await SkuModel.find({ product_id: id });
-
-            product.variants = variants;
+            product.docs[0].variants = variants;
 
             this.setResponse(product.docs[0]);
 
