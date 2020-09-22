@@ -11,6 +11,11 @@ module.exports = {
         const result = await customer.getById(req.params.id);
         return res.status(result.statusCode).send(result.result);
     },
+    async auth(req, res) {
+        const customer = new Customer();
+        const result = await customer.auth(req.body);
+        return res.status(result.statusCode).send(result.result);
+    },
     async create(req, res) {
         const customer = new Customer();
         const result = await customer.create(req.body);

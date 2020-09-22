@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
 const mongooseAutoIncrement = require('mongoose-auto-increment');
@@ -5,6 +6,10 @@ const mongooseAutoIncrement = require('mongoose-auto-increment');
 const CustomerSchema = new mongoose.Schema({
     id: {
         type: Number
+    },
+    password: {
+        type: String,
+        required: true
     },
     first_name: {
         type: String,
@@ -39,6 +44,10 @@ const CustomerSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     }
+});
+
+CustomerSchema.pre('save', async function () {
+    this.password = await bcrypt.hash(this.password, 10);
 });
 
 CustomerSchema.plugin(mongooseAutoIncrement.plugin, { model: 'Customer', field: 'id', startAt: 1, incrementBy: 1 });

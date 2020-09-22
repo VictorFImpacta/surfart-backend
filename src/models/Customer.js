@@ -9,7 +9,7 @@ const CustomerModel = mongoose.model('Customer');
 
 const selectString = '-_id -__v';
 
-class Product {
+class Customer {
 
     constructor() {
         this.result = [];
@@ -52,6 +52,38 @@ class Product {
 
         for (const prop in data) {
             if (!data[prop]) delete data[prop];
+        }
+    }
+
+    async auth(data) {
+        try {
+
+            const { email, password } = data;
+
+            if (!email || !password) {
+                this.setResponse({ message: 'Please, fill in all fields required' }, 400);
+                return this.response()
+            }
+
+            const customer = await Customer.findOne({ email }).select('+password');
+
+            if (!customer) {
+                this.setResponse({ message: 'Customer was not found' }, 400);
+                return this.response();
+            }
+
+            if (!await bcrypt.compare(password, customer.password)) {
+                this.setResponse({ message: 'Invalid password' }, 400);
+                return this.response();
+            }
+
+            customer.password = undefined;
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
         }
     }
 
@@ -105,13 +137,10 @@ class Product {
             this.setResponse({ customerCreated, token });
 
         } catch (error) {
-            if (error.errmsg && error.errmsg.includes('E11000')) {
-                return res.status(422).send({
-                    error: 'email already used'
-                });
-            }
-            console.error('Catch_error: ', error);
             this.setResponse(error, 500);
+            if (error.errmsg && error.errmsg.includes('E11000')) {
+                this.setResponse({ message: 'email already used' }, 400)
+            }
         } finally {
             return this.response();
         }
@@ -204,4 +233,4 @@ function formatRequest(data, isUpdated = false) {
     }
 }
 
-module.exports = Product;
+module.exports = Customer;
