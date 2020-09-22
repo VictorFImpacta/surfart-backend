@@ -62,14 +62,14 @@ class Order {
     async getById(id) {
         try {
 
-            const categories = await OrderModel.paginate({ id }, { select: selectString });
+            const order = await OrderModel.paginate({ id }, { select: selectString });
 
-            if (!categories.docs.length) {
-                this.setResponse({ message: 'Categories was not found!' }, 400);
+            if (!order.docs.length) {
+                this.setResponse({ message: 'Order was not found!' }, 400);
                 return this.response();
             }
 
-            this.setResponse(categories.docs[0]);
+            this.setResponse(order.docs[0]);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -82,13 +82,13 @@ class Order {
     async create(data) {
         try {
 
-            const validOrder = this.validate(data, ['customer', 'items', 'value', 'toDelivery', 'billing_address,']);
+            const validOrder = this.validate(data, ['customer', 'items', 'value', 'toDelivery', 'billing_address']);
 
             if (validOrder.isInvalid) {
                 return this.response();
             }
 
-            const customerValidate = await validateCustomer(data);
+            const customerValidate = await validateCustomer.find(data);
             if (customerValidate.isInvalid) {
                 return this.response();
             }
@@ -152,21 +152,16 @@ class Order {
     };
 }
 
-async function validateCustomer(data) {
+async function validateCustomer(customer_id) {
 
-    const customer = await CustomerModel.findById(data.customer_id);
+    const customer = await CustomerModel.paginate({ id: customer_id }, { select: selectString });
 
-    if (!customer) {
-        this.setResponse({ message: `Customer ${data.customer_id} not found` }, 400);
+    if (!customer || !customer.docs || !customer.docs.length) {
+        this.setResponse({ message: `Customer ${customer_id} not found` }, 400);
         return { isInvalid: true };
     }
 
-    customer.historic = undefined;
-    customer.__v = undefined;
-    data.customer_id = undefined;
-    data.customer = customer;
-
-    return { isInvalid: false };
+    return customer;
 
 }
 
