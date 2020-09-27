@@ -4,7 +4,7 @@ const mongooseAutoIncrement = require('mongoose-auto-increment');
 
 mongooseAutoIncrement.initialize(mongoose.connection);
 
-const CategorySchema = new mongoose.Schema({
+const SubCategorySchema = new mongoose.Schema({
     id: {
         type: Number,
         required: true
@@ -18,11 +18,11 @@ const CategorySchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    subcategories: {
-        type: Array
+    category_id: {
+        type: String
     }
 });
 
-CategorySchema.plugin(mongoosePaginate);
-CategorySchema.plugin(mongooseAutoIncrement.plugin, { model: 'Category', field: 'id', startAt: 1, incrementBy: 1 });
-mongoose.model('Category', CategorySchema);
+SubCategorySchema.plugin(mongoosePaginate);
+SubCategorySchema.plugin(mongooseAutoIncrement.plugin, { model: 'SubCategory', field: 'id', startAt: 1, incrementBy: 1 });
+mongoose.model('SubCategory', SubCategorySchema);

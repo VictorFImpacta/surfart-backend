@@ -25,10 +25,5 @@ module.exports = {
         const category = new Category();
         const result = await category.delete(req.params.id);
         return res.status(result.statusCode).send(result.result);
-    },
-    async createAddress(req, res) {
-        const category = new Category();
-        const result = await category.createAddress(req.params.id, req.body);
-        return res.status(result.statusCode).send(result.result);
     }
 };
