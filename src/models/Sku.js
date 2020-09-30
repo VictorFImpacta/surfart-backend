@@ -168,7 +168,10 @@ function formatRequest(data, isUpdated = false) {
     data.id = undefined;
     data.sku = undefined;
     data.created_at = undefined;
-    data.product_id = undefined;
+
+    if (isUpdated) {
+        data.product_id = undefined;
+    }
 
     for (const prop in data) {
         if (!data[prop]) delete data[prop];
