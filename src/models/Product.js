@@ -98,7 +98,9 @@ class Product {
             //     docs: products
             // }
 
-            const response = await ProductModel.find({})
+            let response = await ProductModel.find({})
+
+            response = { docs: response };
 
             this.setResponse(response);
 
