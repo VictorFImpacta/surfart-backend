@@ -87,6 +87,29 @@ class Product {
         }
     };
 
+    async getAllWithoutPagination() {
+        try {
+
+            // const query = queryFormater({ category });
+
+            // const products = await ProductModel.aggregate(query);
+
+            // const response = {
+            //     docs: products
+            // }
+
+            const response = await ProductModel.find({})
+
+            this.setResponse(response);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    };
+
     async getById(id) {
         try {
 

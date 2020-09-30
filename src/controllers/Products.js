@@ -6,6 +6,11 @@ module.exports = {
         const result = await product.getAll(req.query);
         return res.status(result.statusCode).send(result.result);
     },
+    async getAllWithoutPagination(req, res) {
+        const product = new Product();
+        const result = await product.getAllWithoutPagination(req.query);
+        return res.status(result.statusCode).send(result.result);
+    },
     async getById(req, res) {
         const product = new Product();
         const result = await product.getById(req.params.id);
