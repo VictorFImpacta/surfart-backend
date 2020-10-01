@@ -59,8 +59,6 @@ class Product {
     async getAll({ category }) {
         try {
 
-            const total = await ProductModel.find().count();
-
             const query = queryFormater({ category });
 
             const products = await ProductModel.aggregate(query);
