@@ -6,6 +6,11 @@ module.exports = {
         const result = await subCategory.getAll(req.params);
         return res.status(result.statusCode).send(result.result);
     },
+    async list(req, res) {
+        const subCategory = new SubCategory();
+        const result = await subCategory.list(req.params);
+        return res.status(result.statusCode).send(result.result);
+    },
     async getById(req, res) {
         const subCategory = new SubCategory();
         const result = await subCategory.getById(req.params.id);

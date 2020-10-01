@@ -91,7 +91,7 @@ class Customer {
         try {
 
             const customers = await CustomerModel.find();
-            this.setResponse(customers);
+            this.setResponse({ Docs: customers });
 
         } catch (error) {
             console.error('Catch_error: ', error);

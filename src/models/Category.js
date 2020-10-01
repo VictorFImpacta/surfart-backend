@@ -57,7 +57,7 @@ class Category {
         try {
 
             const categories = await CategoryModel.find();
-            this.setResponse(categories);
+            this.setResponse({ Docs: categories });
 
         } catch (error) {
             console.error('Catch_error: ', error);

@@ -63,7 +63,7 @@ class Product {
 
             const products = await ProductModel.aggregate(query);
 
-            this.setResponse(products);
+            this.setResponse({ Docs: products });
 
         } catch (error) {
             console.error('Catch_error: ', error);
