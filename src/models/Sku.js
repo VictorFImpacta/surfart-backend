@@ -58,7 +58,7 @@ class Sku {
         try {
 
             const skus = await SkuModel.find();
-            this.setResponse({ Docs: skus });
+            this.setResponse({ docs: skus });
 
         } catch (error) {
             console.error('Catch_error: ', error);

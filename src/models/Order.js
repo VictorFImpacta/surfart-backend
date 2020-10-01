@@ -45,7 +45,7 @@ class Order {
         try {
 
             const orders = await OrderModel.find();
-            this.setResponse({ Docs: orders });
+            this.setResponse({ docs: orders });
 
         } catch (error) {
             console.error('Catch_error: ', error);
