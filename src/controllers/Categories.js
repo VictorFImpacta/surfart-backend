@@ -3,7 +3,12 @@ const Category = require('../models/Category');
 module.exports = {
     async getAll(req, res) {
         const category = new Category();
-        const result = await category.getAll(req.params);
+        const result = await category.getAll();
+        return res.status(result.statusCode).send(result.result);
+    },
+    async list(req, res) {
+        const category = new Category();
+        const result = await category.list(req.params);
         return res.status(result.statusCode).send(result.result);
     },
     async getById(req, res) {

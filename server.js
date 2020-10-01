@@ -18,5 +18,6 @@ app.use('/api/orders', require('./src/routes/OrderRouter'));
 app.use('/api/customers', require('./src/routes/CustomerRouter'));
 app.use('/api/categories', require('./src/routes/CategoryRouter'));
 app.use('/api/payments', require('./src/routes/PaymentsRouter'));
+app.use('/api/getall', require('./src/routes/GetAll.js'));
 
 app.listen(process.env.PORT || 3000);
