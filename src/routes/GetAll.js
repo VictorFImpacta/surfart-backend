@@ -13,8 +13,8 @@ const routes = express.Router();
 
 routes.get('/categories', CategoryController.getAll);
 routes.get('/orders', OrderController.getAll);
-routes.post('/customers', CustomerController.getAll);
-routes.delete('/products', ProductController.getAll);
-routes.delete('/skus', SkuController.getAll);
+routes.get('/customers', CustomerController.getAll);
+routes.get('/products', ProductController.getAll);
+routes.get('/skus', SkuController.getAll);
 
 module.exports = routes;

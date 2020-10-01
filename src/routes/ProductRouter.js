@@ -8,8 +8,8 @@ const ProductController = require('../controllers/Products');
 
 // Product Routes
 routes.get('/', ProductController.getAll);
+routes.get('/', ProductController.list);
 routes.get('/:id', ProductController.getById);
-routes.post('/all', ProductController.getAllWithoutPagination);
 routes.post('/', ProductController.create);
 routes.put('/:id', ProductController.update);
 routes.delete('/:id', ProductController.delete);

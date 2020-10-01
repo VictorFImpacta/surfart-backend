@@ -10,7 +10,7 @@ app.use(cors());
 
 // dataBase.initializeDatabase();
 dataBase.initializeDatabaseHomolog()
-    // dataBase.initializeDatabaseDevelopment();
+// dataBase.initializeDatabaseDevelopment();
 
 app.use('/api/products', require('./src/routes/ProductRouter'));
 app.use('/api/skus', require('./src/routes/SkuRouter'));
