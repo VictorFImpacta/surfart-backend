@@ -41,7 +41,21 @@ class Order {
         return data;
     }
 
-    async getAll({ page = 1, limit = 10 }) {
+    async getAll() {
+        try {
+
+            const orders = await OrderModel.find();
+            this.setResponse(orders);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    };
+
+    async list({ page = 1, limit = 10 }) {
         try {
 
             if (limit > 50) {

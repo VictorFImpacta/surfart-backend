@@ -56,7 +56,26 @@ class Product {
         }
     }
 
-    async getAll({ page = 1, limit = 10, category }) {
+    async getAll({ category }) {
+        try {
+
+            const total = await ProductModel.find().count();
+
+            const query = queryFormater({ category });
+
+            const products = await ProductModel.aggregate(query);
+
+            this.setResponse(products);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    };
+
+    async list({ page = 1, limit = 10, category }) {
         try {
 
             if (limit > 50) {
@@ -244,13 +263,15 @@ function queryFormater({ page, limit, category }) {
         }
     })
 
-    if (page > 1) {
+    if (page && page > 1) {
         query.push({
             $skip: limit * (page - 1)
         })
     }
 
-    query.push({ $limit: Number(limit) });
+    if (limit) {
+        query.push({ $limit: Number(limit) });
+    }
 
     return query;
 }

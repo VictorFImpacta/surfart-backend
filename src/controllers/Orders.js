@@ -6,6 +6,11 @@ module.exports = {
         const result = await order.getAll(req.query);
         return res.status(result.statusCode).send(result.result);
     },
+    async list(req, res) {
+        const order = new Order();
+        const result = await order.list(req.query);
+        return res.status(result.statusCode).send(result.result);
+    },
     async getById(req, res) {
         const order = new Order();
         const result = await order.getById(req.params.id);
