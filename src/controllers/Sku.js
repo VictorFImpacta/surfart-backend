@@ -31,5 +31,25 @@ module.exports = {
         const sku = new Sku();
         const result = await sku.delete(req.params.id);
         return res.status(result.statusCode).send(result.result);
+    },
+    async decreaseAvailableStock(req, res) {
+        const sku = new Sku();
+        const result = await sku.decreaseAvailableStock(req.params.id, req.body.quantity);
+        return res.status(result.statusCode).send(result.result);
+    },
+    async increaseAvailableStock(req, res) {
+        const sku = new Sku();
+        const result = await sku.increaseAvailableStock(req.params.id, req.body.quantity);
+        return res.status(result.statusCode).send(result.result);
+    },
+    async decreaseRealStock(req, res) {
+        const sku = new Sku();
+        const result = await sku.decreaseRealStock(req.params.id, req.body.quantity);
+        return res.status(result.statusCode).send(result.result);
+    },
+    async increaseRealStock(req, res) {
+        const sku = new Sku();
+        const result = await sku.increaseRealStock(req.params.id, req.body.quantity);
+        return res.status(result.statusCode).send(result.result);
     }
 };

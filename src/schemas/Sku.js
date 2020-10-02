@@ -47,6 +47,10 @@ const SkuSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    availableStock: {
+        type: Number,
+        required: true
+    }, 
     images: []
 });
 

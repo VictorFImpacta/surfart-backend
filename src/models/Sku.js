@@ -175,6 +175,99 @@ class Sku {
             return this.response();
         }
     };
+
+    async decreaseAvailableStock(id, incomingQuantity) {
+        try {
+
+            let { availableStock } = await SkuModel.findOne({ id });
+
+            const newStock = availableStock - incomingQuantity;
+
+            if (newStock < 0) {
+                this.setResponse({ message: 'A operação irá deixar o estoque disponível negativo' }, 400);
+                return this.response();
+            }
+
+            await SkuModel.findOneAndUpdate({ id }, { availableStock: newStock });
+
+            this.setResponse({ message: 'Estoque disponível atualizado' }, 200);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
+    async increaseAvailableStock(id, incomingQuantity) {
+        try {
+
+            let { availableStock } = await SkuModel.findOne({ id });
+            let { quantity } = await SkuModel.findOne({ id });
+
+            const newStock = availableStock + incomingQuantity;
+
+            if (newStock > quantity) {
+                this.setResponse({ message: 'A operação irá deixar o estoque disponível maior do que o estoque real' }, 400);
+                return this.response();
+            }
+
+            await SkuModel.findOneAndUpdate({ id }, { availableStock: newStock });
+
+            this.setResponse({ message: 'Estoque disponível atualizado' }, 200);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
+    async decreaseRealStock(id, incomingQuantity) {
+        try {
+
+            let { availableStock, quantity } = await SkuModel.findOne({ id });
+
+            const newStock = quantity - incomingQuantity;
+
+            if (newStock < availableStock) {
+                this.setResponse({ message: 'A operação irá deixar o estoque disponível maior do que o estoque real' });
+                return this.response();
+            }
+
+            await SkuModel.findOneAndUpdate({ id }, { quantity: newStock });
+
+            this.setResponse({ message: 'Estoque real atualizado' }, 200);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
+    async increaseRealStock(id, incomingQuantity) {
+        try {
+
+            let { quantity } = await SkuModel.findOne({ id });
+
+            const newStock = quantity + incomingQuantity;
+
+            await SkuModel.findOneAndUpdate({ id }, { quantity: newStock });
+
+            this.setResponse({ message: 'Estoque real atualizado' }, 200);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
 }
 
 function formatRequest(data, isUpdated = false) {
@@ -182,9 +275,10 @@ function formatRequest(data, isUpdated = false) {
     data.id = undefined;
     data.sku = undefined;
     data.created_at = undefined;
-
     if (isUpdated) {
         data.product_id = undefined;
+        data.quantity = undefined;
+        data.availableStock = undefined;
     }
 
     for (const prop in data) {
