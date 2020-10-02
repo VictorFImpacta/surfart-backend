@@ -214,9 +214,14 @@ class Sku {
     async decreaseRealStock(id, incomingQuantity) {
         try {
 
-            let { quantity } = await SkuModel.findOne({ id });
+            let { availableStock, quantity } = await SkuModel.findOne({ id });
 
             const newStock = quantity - incomingQuantity;
+
+            if (newStock < availableStock) {
+                this.setResponse({ message: 'A operação irá deixar o estoque disponível maior do que o estoque real' });
+                return this.response();
+            }
 
             await SkuModel.findOneAndUpdate({ id }, { quantity: newStock });
 
@@ -258,6 +263,8 @@ function formatRequest(data, isUpdated = false) {
     data.created_at = undefined;
     if (isUpdated) {
         data.product_id = undefined;
+        data.quantity = undefined;
+        data.availableStock = undefined;
     }
 
     for (const prop in data) {
