@@ -56,10 +56,10 @@ class Product {
         }
     }
 
-    async getAll({ category }) {
+    async getAll({ searchBy }) {
         try {
 
-            const query = queryFormater({ category });
+            const query = queryFormater({ searchBy });
 
             const products = await ProductModel.aggregate(query);
 
@@ -240,14 +240,17 @@ function formatRequest(data, isUpdated = false) {
     }
 }
 
-function queryFormater({ page, limit, category }) {
+function queryFormater({ page, limit, searchBy }) {
 
     const query = [];
 
-    if (category) {
+    if (searchBy) {
         query.push({
             $match: {
-                'categories.name': String(category)
+                title: {
+                    $regex: searchBy,
+                    $options: 'i'
+                }
             }
         });
     }
