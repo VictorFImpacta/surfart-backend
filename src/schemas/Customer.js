@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
 const mongooseAutoIncrement = require('mongoose-auto-increment');
+const audit = require('./plugins/index');
 
 const CustomerSchema = new mongoose.Schema({
     id: {
@@ -24,14 +25,6 @@ const CustomerSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    created_at: {
-        type: Date,
-        default: new Date(),
-    },
-    updated_at: {
-        type: Date,
-        default: new Date(),
-    },
     address: {
         type: Array,
         default: []
@@ -46,10 +39,11 @@ const CustomerSchema = new mongoose.Schema({
     }
 });
 
-CustomerSchema.pre('save', async function () {
+CustomerSchema.pre('save', async function() {
     this.password = await bcrypt.hash(this.password, 10);
 });
 
+CustomerSchema.plugin(audit);
 CustomerSchema.plugin(mongooseAutoIncrement.plugin, { model: 'Customer', field: 'id', startAt: 1, incrementBy: 1 });
 CustomerSchema.plugin(mongoosePaginate);
 

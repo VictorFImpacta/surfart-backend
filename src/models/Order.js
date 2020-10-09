@@ -139,6 +139,7 @@ class Order {
             for (const prop in data) {
                 order[prop] = order[prop];
             };
+            data.updated_at = new Date();
 
             const updatedCategory = await OrderModel.findOneAndUpdate({ id }, order, { new: true });
             this.setResponse(updatedCategory);
@@ -154,7 +155,7 @@ class Order {
     async delete(id) {
         try {
 
-            const deletedCategory = await OrderModel.findOneAndDelete({ id });
+            const deletedCategory = await OrderModel.findOneAndUpdate({ id }, { deleted: true }, { new: true });
             this.setResponse(deletedCategory);
 
         } catch (error) {
@@ -202,11 +203,11 @@ async function validateItems(data) {
 
 function formatRequest(data, isUpdated = false) {
 
-    data.id = undefined;
-    data.price = undefined;
     data.updated_at = undefined;
     data.created_at = undefined;
-    data.updated_at = undefined;
+    data.deleted = undefined;
+    data.id = undefined;
+    data.price = undefined;
 
     for (const prop in data) {
         if (!data[prop]) delete data[prop];

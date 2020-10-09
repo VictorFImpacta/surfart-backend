@@ -185,6 +185,7 @@ class Customer {
             for (const prop in data) {
                 customer[prop] = data[prop];
             };
+            data.updated_at = new Date();
 
             const updatedCustomer = await CustomerModel.findOneAndUpdate({ id }, customer, { new: true });
             updatedCustomer.__v = undefined;
@@ -202,7 +203,7 @@ class Customer {
     async delete(id) {
         try {
 
-            const deletedCustomer = await CustomerModel.findOneAndDelete({ id });
+            const deletedCustomer = await CustomerModel.findOneAndUpdate({ id }, { deleted: true }, { new: true });
             deletedCustomer.password = undefined;
             deletedCustomer.__v = undefined;
             this.setResponse(deletedCustomer);
@@ -254,13 +255,14 @@ function generateToken(params = {}) {
 
 function formatRequest(data, isUpdated = false) {
 
+    data.updated_at = undefined;
+    data.created_at = undefined;
+    data.deleted = undefined;
     data.historic = undefined;
     data.address = undefined;
     data.admin = false;
-    data.created_at = undefined;
     data.password = undefined;
     data.id = undefined;
-    data.updated_at = undefined;
 
     for (const prop in data) {
         if (!data[prop]) delete data[prop];

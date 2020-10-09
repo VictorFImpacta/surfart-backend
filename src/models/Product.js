@@ -201,6 +201,7 @@ class Product {
             for (const prop in data) {
                 product[prop] = data[prop];
             };
+            data.updated_at = new Date();
 
             const updatedProduct = await ProductModel.findOneAndUpdate({ id }, product, { new: true });
             this.setResponse(updatedProduct);
@@ -216,7 +217,7 @@ class Product {
     async delete(id) {
         try {
 
-            const deletedProduct = await ProductModel.findOneAndDelete({ id });
+            const deletedProduct = await ProductModel.findOneAndUpdate({ id }, { deleted: true }, { new: true });
             this.setResponse(deletedProduct);
 
         } catch (error) {
@@ -230,10 +231,11 @@ class Product {
 
 function formatRequest(data, isUpdated = false) {
 
+    data.updated_at = undefined;
+    data.created_at = undefined;
+    data.deleted = undefined;
     data.id = undefined;
     data.__v = undefined;
-    data.created_at = undefined;
-    data.updated_at = undefined;
 
     for (const prop in data) {
         if (!data[prop]) delete data[prop];

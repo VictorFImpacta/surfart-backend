@@ -137,6 +137,7 @@ class Category {
         try {
 
             formatRequest(data);
+            data.updated_at = new Date();
             const updatedCategory = await CategoryModel.findOneAndUpdate({ id }, data, { new: true });
             updatedCategory = await CategoryModel.findById(id);
             this.setResponse(updatedCategory);
@@ -152,8 +153,10 @@ class Category {
     async delete(id) {
         try {
 
-            const deletedCategory = await CategoryModel.findOneAndDelete({ id });
+            const deletedCategory = await CategoryModel.findOneAndUpdate({ id }, { deleted: true }, { new: true });
             this.setResponse(deletedCategory);
+
+
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -165,6 +168,10 @@ class Category {
 }
 
 function formatRequest(data) {
+
+    data.updated_at = undefined;
+    data.created_at = undefined;
+    data.deleted = undefined;
     data.id = undefined;
 
     for (const prop in data) {

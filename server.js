@@ -1,4 +1,4 @@
-module.exports = async (databaseEnvironment) => {
+module.exports = async(databaseEnvironment) => {
 
     const express = require('express');
     const cors = require('cors');
@@ -23,7 +23,6 @@ module.exports = async (databaseEnvironment) => {
     app.use('/api/orders', require('./src/routes/OrderRouter'));
     app.use('/api/customers', require('./src/routes/CustomerRouter'));
     app.use('/api/categories', require('./src/routes/CategoryRouter'));
-    app.use('/api/subcategories', require('./src/routes/SubCategoryRouter'));
     app.use('/api/payments', require('./src/routes/PaymentsRouter'));
     app.use('/api/getall', require('./src/routes/GetAll.js'));
 

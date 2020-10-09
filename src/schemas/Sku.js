@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
 const mongooseAutoIncrement = require('mongoose-auto-increment');
+const audit = require('./plugins/index');
 
 mongooseAutoIncrement.initialize(mongoose.connection);
 
@@ -50,10 +51,11 @@ const SkuSchema = new mongoose.Schema({
     availableStock: {
         type: Number,
         required: true
-    }, 
+    },
     images: []
 });
 
+SkuSchema.plugin(audit);
 SkuSchema.plugin(mongooseAutoIncrement.plugin, { model: 'Sku', field: 'id', startAt: 1, incrementBy: 1 });
 SkuSchema.plugin(mongoosePaginate);
 

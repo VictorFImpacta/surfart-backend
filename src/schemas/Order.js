@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
 const mongooseAutoIncrement = require('mongoose-auto-increment');
+const audit = require('./plugins/index');
 
 const OrderSchema = new mongoose.Schema({
     id: {
@@ -49,17 +50,10 @@ const OrderSchema = new mongoose.Schema({
     },
     shipped_date: {
         type: Date
-    },
-    created_at: {
-        type: Date,
-        default: new Date(),
-    },
-    updated_at: {
-        type: Date,
-        default: new Date(),
     }
 });
 
+OrderSchema.plugin(audit);
 OrderSchema.plugin(mongooseAutoIncrement.plugin, { model: 'Order', field: 'id', startAt: 1, incrementBy: 1 });
 OrderSchema.plugin(mongoosePaginate);
 

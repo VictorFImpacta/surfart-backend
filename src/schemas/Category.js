@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
 const mongooseAutoIncrement = require('mongoose-auto-increment');
+const audit = require('./plugins/index');
 
 mongooseAutoIncrement.initialize(mongoose.connection);
 
@@ -17,12 +18,10 @@ const CategorySchema = new mongoose.Schema({
     description: {
         type: String,
         required: true
-    },
-    subcategories: {
-        type: Array
     }
 });
 
+CategorySchema.plugin(audit);
 CategorySchema.plugin(mongoosePaginate);
 CategorySchema.plugin(mongooseAutoIncrement.plugin, { model: 'Category', field: 'id', startAt: 1, incrementBy: 1 });
 mongoose.model('Category', CategorySchema);

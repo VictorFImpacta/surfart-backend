@@ -109,7 +109,7 @@ class Sku {
     async create(data) {
         try {
 
-            const validateArray = ['product_id', 'title', 'price', 'old_price', 'images', 'height', 'weight', 'quantity', 'images'];
+            const validateArray = ['product_id', 'availableStock', 'title', 'price', 'old_price', 'images', 'height', 'weight', 'quantity', 'images'];
             const validProduct = this.validate(data, validateArray);
 
             if (validProduct.isInvalid) {
@@ -150,6 +150,7 @@ class Sku {
             for (const prop in data) {
                 variant[prop] = data[prop];
             };
+            data.updated_at = new Date();
 
             const skuUpdated = await SkuModel.findOneAndUpdate({ id }, variant, { new: true });
             this.setResponse(skuUpdated);
@@ -165,7 +166,7 @@ class Sku {
     async delete(id) {
         try {
 
-            const deletedSku = await SkuModel.findOneAndDelete({ id });
+            const deletedSku = await SkuModel.findOneAndUpdate({ id }, { deleted: true }, { new: true });
             this.setResponse(deletedSku);
 
         } catch (error) {
@@ -274,7 +275,10 @@ function formatRequest(data, isUpdated = false) {
 
     data.id = undefined;
     data.sku = undefined;
+    data.updated_at = undefined;
     data.created_at = undefined;
+    data.deleted = undefined;
+
     if (isUpdated) {
         data.product_id = undefined;
         data.quantity = undefined;
