@@ -43,13 +43,12 @@ class Product {
     }
 
     formatRequest(data, isUpdated = false) {
+
         data.id = undefined;
         data.rate_stars = undefined;
         data.created_at = undefined;
-
-        if (isUpdated) {
-            data.updated_at = undefined;
-        }
+        data.updated_at = undefined;
+        data.deleted = undefined;
 
         for (const prop in data) {
             if (!data[prop]) delete data[prop];
@@ -80,15 +79,13 @@ class Product {
                 limit = 50;
             }
 
-            const total = await ProductModel.find().count();
-
             const query = queryFormater({ page, limit, category });
 
             const products = await ProductModel.aggregate(query);
 
             const response = {
                 docs: products,
-                total,
+                total: products.length,
                 limit,
                 page,
                 pages: Math.round(total / limit)
@@ -104,45 +101,21 @@ class Product {
         }
     };
 
-    async getAllWithoutPagination() {
-        try {
-
-            // const query = queryFormater({ category });
-
-            // const products = await ProductModel.aggregate(query);
-
-            // const response = {
-            //     docs: products
-            // }
-
-            let response = await ProductModel.find({})
-
-            response = { docs: response };
-
-            this.setResponse(response);
-
-        } catch (error) {
-            console.error('Catch_error: ', error);
-            this.setResponse(error, 500);
-        } finally {
-            return this.response();
-        }
-    };
-
     async getById(id) {
         try {
 
-            const product = await ProductModel.paginate({ id }, { select: selectString });
+            const query = queryFormater({ id });
 
-            if (!product.docs.length) {
+            const product = await ProductModel.aggregate(query);
+
+            if (!product) {
                 this.setResponse({ message: 'Product was not found!' }, 400);
                 return this.response();
             }
 
-            const variants = await SkuModel.find({ product_id: id });
-            product.docs[0].variants = variants;
+            const response = product.find(item => item.id == id);
 
-            this.setResponse(product.docs[0]);
+            this.setResponse(response);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -155,7 +128,7 @@ class Product {
     async create(data) {
         try {
 
-            const validProduct = this.validate(data, ['title', 'categories']);
+            const validProduct = this.validate(data, ['title', 'category']);
 
             if (validProduct.isInvalid) {
                 return this.response();
@@ -220,6 +193,8 @@ class Product {
             const deletedProduct = await ProductModel.findOneAndUpdate({ id }, { deleted: true }, { new: true });
             this.setResponse(deletedProduct);
 
+            await SkuModel.updateMany({ product_id: id }, { deleted: true });
+
         } catch (error) {
             console.error('Catch_error: ', error);
             this.setResponse(error, 500);
@@ -242,7 +217,7 @@ function formatRequest(data, isUpdated = false) {
     }
 }
 
-function queryFormater({ page, limit, searchBy }) {
+function queryFormater({ page, limit, searchBy, id }) {
 
     const query = [];
 
@@ -252,7 +227,8 @@ function queryFormater({ page, limit, searchBy }) {
                 title: {
                     $regex: searchBy,
                     $options: 'i'
-                }
+                },
+                deleted: false
             }
         });
     }
@@ -264,7 +240,20 @@ function queryFormater({ page, limit, searchBy }) {
             foreignField: 'product_id',
             as: 'variants'
         }
-    })
+    });
+
+    query.push({
+        $lookup: {
+            from: 'categories',
+            localField: 'category',
+            foreignField: 'id',
+            as: 'category'
+        }
+    });
+
+    query.push({
+        $unwind: '$category'
+    });
 
     if (page && page > 1) {
         query.push({

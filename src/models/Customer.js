@@ -90,7 +90,7 @@ class Customer {
     async getAll() {
         try {
 
-            const customers = await CustomerModel.find();
+            const customers = await CustomerModel.find({ deleted: false });
             this.setResponse({ docs: customers });
 
         } catch (error) {
@@ -108,7 +108,7 @@ class Customer {
                 limit = 50;
             }
 
-            const customers = await CustomerModel.paginate({}, { page: Number(page), limit: Number(limit), select: selectString });
+            const customers = await CustomerModel.paginate({ deleted: false }, { page: Number(page), limit: Number(limit), select: selectString });
             this.setResponse(customers);
 
         } catch (error) {
@@ -122,7 +122,7 @@ class Customer {
     async getById(id) {
         try {
 
-            const customer = await CustomerModel.paginate({ id }, { select: selectString });
+            const customer = await CustomerModel.paginate({ id, deleted: false }, { select: selectString });
 
             if (!customer.docs.length) {
                 this.setResponse({ message: 'Customer was not found!' }, 400);

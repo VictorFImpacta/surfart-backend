@@ -13,8 +13,8 @@ const ProductSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    categories: {
-        type: [],
+    category: {
+        type: Number,
         required: true
     },
     tags: {
@@ -25,7 +25,10 @@ const ProductSchema = new mongoose.Schema({
         required: false,
         default: 0
     },
-    variants: []
+    variants: [{
+        type: Number,
+        required: true
+    }]
 });
 
 ProductSchema.plugin(audit);

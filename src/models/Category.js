@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
+const Product = require('./Product');
 mongoose.set('useFindAndModify', false);
 
 const CategoryModel = mongoose.model('Category');
+const ProductModel = mongoose.model('Product');
 
 const selectString = '-_id -__v';
 
@@ -56,7 +58,7 @@ class Category {
     async getAll() {
         try {
 
-            const categories = await CategoryModel.find();
+            const categories = await CategoryModel.find({ deleted: false });
             this.setResponse({ docs: categories });
 
         } catch (error) {
@@ -74,7 +76,7 @@ class Category {
                 limit = 50;
             }
 
-            const categories = await CategoryModel.paginate({}, { page: Number(page), limit: Number(limit), select: selectString });
+            const categories = await CategoryModel.paginate({ deleted: false }, { page: Number(page), limit: Number(limit), select: selectString });
             this.setResponse(categories);
 
         } catch (error) {
@@ -88,7 +90,7 @@ class Category {
     async getById(id) {
         try {
 
-            const categories = await CategoryModel.paginate({ id }, { select: selectString });
+            const categories = await CategoryModel.paginate({ id, deleted: false }, { select: selectString });
 
             if (!categories.docs.length) {
                 this.setResponse({ message: 'Categories was not found!' }, 400);
@@ -156,7 +158,7 @@ class Category {
             const deletedCategory = await CategoryModel.findOneAndUpdate({ id }, { deleted: true }, { new: true });
             this.setResponse(deletedCategory);
 
-
+            await ProductModel.updateMany({ category: id }, { deleted: true });
 
         } catch (error) {
             console.error('Catch_error: ', error);

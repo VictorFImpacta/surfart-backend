@@ -57,7 +57,7 @@ class Sku {
     async getAll() {
         try {
 
-            const skus = await SkuModel.find();
+            const skus = await SkuModel.find({ deleted: false });
             this.setResponse({ docs: skus });
 
         } catch (error) {
@@ -75,7 +75,7 @@ class Sku {
                 limit = 50;
             }
 
-            const skus = await SkuModel.paginate({}, { page: Number(page), limit: Number(limit), select: selectString });
+            const skus = await SkuModel.paginate({ deleted: false }, { page: Number(page), limit: Number(limit), select: selectString });
             this.setResponse(skus);
 
         } catch (error) {
@@ -89,7 +89,7 @@ class Sku {
     async getById(id) {
         try {
 
-            const sku = await SkuModel.paginate({ id }, { select: selectString });
+            const sku = await SkuModel.paginate({ id, deleted: false }, { select: selectString });
 
             if (!sku.docs.length) {
                 this.setResponse({ message: 'Sku was not found!' }, 400);

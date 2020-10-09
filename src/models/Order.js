@@ -44,7 +44,7 @@ class Order {
     async getAll() {
         try {
 
-            const orders = await OrderModel.find();
+            const orders = await OrderModel.find({ deleted: false });
             this.setResponse({ docs: orders });
 
         } catch (error) {
@@ -62,7 +62,7 @@ class Order {
                 limit = 50;
             }
 
-            const orders = await OrderModel.paginate({}, { page, limit, select: selectString });
+            const orders = await OrderModel.paginate({ deleted: false }, { page, limit, select: selectString });
             this.setResponse(orders);
 
         } catch (error) {
@@ -76,7 +76,7 @@ class Order {
     async getById(id) {
         try {
 
-            const categories = await OrderModel.paginate({ id }, { select: selectString });
+            const categories = await OrderModel.paginate({ id, deleted: false }, { select: selectString });
 
             if (!categories.docs.length) {
                 this.setResponse({ message: 'Categories was not found!' }, 400);
