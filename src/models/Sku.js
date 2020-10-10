@@ -141,7 +141,7 @@ class Sku {
             console.error('Catch_error: ', error);
             this.setResponse(error, 500);
         } finally {
-            return this.response();
+            return this.response()
         }
     };
 
