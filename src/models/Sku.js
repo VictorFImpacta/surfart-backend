@@ -177,10 +177,12 @@ class Sku {
         }
     };
 
-    async decreaseAvailableStock(id, incomingQuantity) {
+    async decreaseAvailableStock(id, data) {
         try {
 
-            let { availableStock } = await SkuModel.findOne({ id });
+            const incomingQuantity = data.quantity;
+
+            const { availableStock } = await SkuModel.findOne({ id });
 
             const newStock = availableStock - incomingQuantity;
 
@@ -201,11 +203,12 @@ class Sku {
         }
     }
 
-    async increaseAvailableStock(id, incomingQuantity) {
+    async increaseAvailableStock(id, data) {
         try {
 
-            let { availableStock } = await SkuModel.findOne({ id });
-            let { quantity } = await SkuModel.findOne({ id });
+            const incomingQuantity = data.quantity;
+            const { availableStock } = await SkuModel.findOne({ id });
+            const { quantity } = await SkuModel.findOne({ id });
 
             const newStock = availableStock + incomingQuantity;
 
@@ -226,10 +229,12 @@ class Sku {
         }
     }
 
-    async decreaseRealStock(id, incomingQuantity) {
+    async decreaseRealStock(id, data) {
         try {
 
-            let { availableStock, quantity } = await SkuModel.findOne({ id });
+            const incomingQuantity = data.quantity;
+
+            const { availableStock, quantity } = await SkuModel.findOne({ id });
 
             const newStock = quantity - incomingQuantity;
 
@@ -250,10 +255,12 @@ class Sku {
         }
     }
 
-    async increaseRealStock(id, incomingQuantity) {
+    async increaseRealStock(id, data) {
         try {
 
-            let { quantity } = await SkuModel.findOne({ id });
+            const incomingQuantity = data.quantity;
+
+            const { quantity } = await SkuModel.findOne({ id });
 
             const newStock = quantity + incomingQuantity;
 
