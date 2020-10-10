@@ -117,7 +117,9 @@ class Sku {
     async create(data) {
         try {
 
-            const validateArray = ['product_id', 'availableStock', 'title', 'price', 'old_price', 'images', 'height', 'weight', 'quantity', 'images'];
+            const validateArray = ['product_id', 'availableStock', 'title', 'price', 'old_price',
+                'images', 'height', 'weight', 'quantity', 'size', 'color'
+            ];
             const validProduct = this.validate(data, validateArray);
 
             if (validProduct.isInvalid) {
