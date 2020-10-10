@@ -1,5 +1,13 @@
+require('dotenv').config()
+
+const AWS = require('aws-sdk');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
+
+const s3 = new AWS.S3({
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY
+});
 
 const SkuModel = mongoose.model('Sku');
 const ProductModel = mongoose.model('Product');
@@ -274,6 +282,31 @@ class Sku {
         } finally {
             return this.response();
         }
+    }
+
+    async uploadImage(data) {
+        try {
+
+            const Key = data.key;
+            const Body = Buffer.from(data.value);
+
+            const params = { Bucket: 'surfart', Key, Body };
+            let response;
+
+            s3.upload(params, function(err, data) {
+                response = data;
+                if (err) response = err;
+            });
+
+            this.setResponse(response, 200);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+
     }
 
 }

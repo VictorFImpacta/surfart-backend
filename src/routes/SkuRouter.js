@@ -10,6 +10,7 @@ const SkuController = require('../controllers/Sku');
 routes.get('/', SkuController.getAll);
 routes.get('/:id', SkuController.getById);
 routes.post('/', SkuController.create);
+routes.post('/image', SkuController.uploadImage);
 routes.put('/:id', SkuController.update);
 routes.delete('/:id', SkuController.delete);
 

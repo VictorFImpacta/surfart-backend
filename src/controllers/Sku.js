@@ -51,5 +51,10 @@ module.exports = {
         const sku = new Sku();
         const result = await sku.increaseRealStock(req.params.id, req.body);
         return res.status(result.statusCode).send(result.result);
+    },
+    async uploadImage(req, res) {
+        const sku = new Sku();
+        const result = await sku.uploadImage(req.body);
+        return res.status(result.statusCode).send(result.result);
     }
 };
