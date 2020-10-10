@@ -291,12 +291,20 @@ class Sku {
             const Body = Buffer.from(data.value);
 
             const params = { Bucket: 'surfart', Key, Body };
-            let response;
 
-            s3.upload(params, function(err, data) {
-                response = data;
-                if (err) response = err;
+            const upload = await new Promise((resolve, reject) => {
+                s3.upload(params, (err, data) => {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(data)
+                });
             });
+
+            const response = {
+                Location: upload.Location,
+                Key: upload.Key
+            }
 
             this.setResponse(response, 200);
 
