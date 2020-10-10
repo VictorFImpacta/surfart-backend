@@ -1,3 +1,4 @@
+const request = require('request');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
@@ -165,6 +166,28 @@ class Order {
             return this.response();
         }
     };
+
+    async freight(data) {
+        try {
+
+            const validate = this.validate(data, ['cepOrigem', 'cepDestino', 'weight', 'length', 'height', 'width', 'diameter']);
+
+            if (validate.isInvalid) {
+                return this.response();
+            }
+
+            const urlApi = formatFreight(data);
+            const freight = await consultCorreios(urlApi);
+            const freightJson = xmlToJson(freight.body);
+            this.setResponse(freightJson);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    };
 }
 
 async function validateCustomer(data) {
@@ -212,6 +235,61 @@ function formatRequest(data, isUpdated = false) {
     for (const prop in data) {
         if (!data[prop]) delete data[prop];
     }
+}
+
+function xmlToJson(data) {
+    data = data.replace(/\\n>/g, '')
+        .replace('<?xml version="1.0" encoding="ISO-8859-1" ?>', '');
+
+    const code = data.split('<Codigo>')[1].split('</Codigo>')[0];
+    const value = data.split('<Valor>')[1].split('</Valor>')[0];
+    const estimated_arrival = data.split('<PrazoEntrega>')[1].split('</PrazoEntrega>')[0];
+
+    return { code, value, estimated_arrival }
+}
+
+function formatFreight({ cepOrigem, cepDestino, weight, length, height, width, diameter }) {
+    const options = {
+        nCdEmpresa: "",
+        sDsSenha: "",
+        nCdServico: "04014",
+        sCepOrigem: cepOrigem,
+        sCepDestino: cepDestino,
+        nVlPeso: weight,
+        nCdFormato: "1",
+        nVlComprimento: length, //centimetros
+        nVlAltura: height, //centimetros
+        nVlLargura: width, //centimetros
+        nVlDiametro: diameter, //centimetros
+        sCdMaoPropria: "S",
+        nVlValorDeclarado: "0",
+        sCdAvisoRecebimento: "N",
+        StrRetorno: "xml"
+    }
+
+    const queryString = JSON.stringify(options)
+        .replace(/{/g, '')
+        .replace(/}/g, '')
+        .replace(/"/g, '')
+        .replace(/:/g, '=')
+        .replace(/,/g, '&')
+
+    return `http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?${queryString}`;
+}
+
+function consultCorreios(urlApi) {
+    return new Promise((resolve, reject) => {
+        request(urlApi,
+            (err, res, body) => {
+                if (!err && res.statusCode === 200) {
+                    resolve({ success: true, body })
+                }
+                if (!err && res.statusCode === 404) {
+                    resolve({ success: false, body });
+                }
+                reject(err);
+            });
+    });
 }
 
 module.exports = Order;

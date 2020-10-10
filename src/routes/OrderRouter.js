@@ -7,6 +7,8 @@ const OrderController = require('../controllers/Orders');
 const express = require('express');
 const routes = express.Router();
 
+
+routes.post('/freight', OrderController.freight);
 routes.get('/', OrderController.getAll);
 routes.get('/:id', OrderController.getById);
 routes.post('/', OrderController.create);
