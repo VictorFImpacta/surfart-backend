@@ -238,14 +238,12 @@ function formatRequest(data, isUpdated = false) {
 }
 
 function xmlToJson(data) {
-    data = data.replace(/\\n>/g, '')
-        .replace('<?xml version="1.0" encoding="ISO-8859-1" ?>', '');
 
     const code = data.split('<Codigo>')[1].split('</Codigo>')[0];
     const value = data.split('<Valor>')[1].split('</Valor>')[0];
     const estimated_arrival = data.split('<PrazoEntrega>')[1].split('</PrazoEntrega>')[0];
 
-    return { code, value, estimated_arrival }
+    return { code, value, estimated_arrival };
 }
 
 function formatFreight({ cepOrigem, cepDestino, weight, length, height, width, diameter }) {
