@@ -89,7 +89,6 @@ class Customer {
 
     async getAll() {
         try {
-
             const customers = await CustomerModel.find({ deleted: false });
             this.setResponse({ docs: customers });
 
@@ -140,8 +139,6 @@ class Customer {
     };
 
     async create(data) {
-        let customer;
-
         try {
 
             const validCustomer = this.validate(data, ['first_name', 'last_name', 'email', 'password']);
@@ -152,7 +149,8 @@ class Customer {
 
             formatRequest(data);
 
-            customer = await CustomerModel.create(data);
+            const customer = await CustomerModel.create(data);
+            customer.__v = undefined;
             customer.password = undefined;
 
             const token = `Bearer ${generateToken({ id: customer.id })}`;
@@ -226,15 +224,15 @@ class Customer {
             }
 
             const validateArray = ['cep', 'address', 'number', 'complement', 'neighborhood', 'location', 'state'];
-            const addressTransformed = this.validate(addressTransformed, validateArray);
+            const addressTransformed = this.validate(data, validateArray);
 
             if (addressTransformed.isInvalid) {
                 return this.response();
             }
 
-            customer.result.address.push(addressTransformed);
+            customer.result.addresses.push(addressTransformed);
 
-            const customerUpdated = await CustomerModel.findByIdAndUpdate(id, customer.result, { new: true });
+            const customerUpdated = await CustomerModel.findOneAndUpdate({ id }, customer.result, { new: true });
 
             this.setResponse(customerUpdated);
 
@@ -261,7 +259,6 @@ function formatRequest(data, isUpdated = false) {
     data.historic = undefined;
     data.address = undefined;
     data.admin = false;
-    data.password = undefined;
     data.id = undefined;
 
     for (const prop in data) {

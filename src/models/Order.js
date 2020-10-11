@@ -289,9 +289,6 @@ function consultCorreios(urlApi) {
                 if (!err && res.statusCode === 200) {
                     resolve({ success: true, body })
                 }
-                if (!err && res.statusCode === 404) {
-                    resolve({ success: false, body });
-                }
                 reject(err);
             });
     });

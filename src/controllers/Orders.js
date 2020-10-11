@@ -2,6 +2,7 @@ const Order = require('../models/Order');;
 
 module.exports = {
     async getAll(req, res) {
+        //if (!req.admin) return denyAccess(res);
         const order = new Order();
         const result = await order.getAll(req.query);
         return res.status(result.statusCode).send(result.result);
@@ -12,6 +13,7 @@ module.exports = {
         return res.status(result.statusCode).send(result.result);
     },
     async list(req, res) {
+        //if (!req.admin) return denyAccess(res);
         const order = new Order();
         const result = await order.list(req.query);
         return res.status(result.statusCode).send(result.result);
@@ -42,3 +44,7 @@ module.exports = {
         return res.status(result.statusCode).send(result.result);
     }
 };
+
+function denyAccess(res) {
+    return res.status(401).send({ message: 'You do not have access for this' });
+}

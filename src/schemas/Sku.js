@@ -36,6 +36,10 @@ const SkuSchema = new mongoose.Schema({
         type: Number,
         required: false
     },
+    length: {
+        type: Number,
+        required: true
+    },
     height: {
         type: Number,
         required: true
@@ -52,7 +56,7 @@ const SkuSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    size: [{ type: String, enum: ['PP', 'P', 'M', 'G', 'GG', 'XGG'], required: true, uppercase: true }],
+    size: { type: String, enum: ['PP', 'P', 'M', 'G', 'GG', 'XGG'], required: true, uppercase: true },
     color: {
         title: { type: String, required: true },
         code: { type: String }
