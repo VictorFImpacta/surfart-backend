@@ -170,15 +170,22 @@ class Order {
     async freight(data) {
         try {
 
-            const validate = this.validate(data, ['cepOrigem', 'cepDestino', 'weight', 'length', 'height', 'width', 'diameter']);
+            const validate = this.validate(data, ['postalCodeOrigin', 'postalCodeDestiny', 'weight',
+                'length', 'height', 'width', 'value', 'serviceCode']);
 
             if (validate.isInvalid) {
+                return this.response();
+            }
+
+            if (data.serviceCode != '04014' && data.serviceCode != '04510') {
+                this.setResponse({ message: "Invalid 'serviceCode'" }, 400);
                 return this.response();
             }
 
             const urlApi = formatFreight(data);
             const freight = await consultCorreios(urlApi);
             const freightJson = xmlToJson(freight.body);
+            data.serviceCode == '04014' ? freightJson.code = 'SEDEX à vista' : freightJson.code = 'PAC à vista';
             this.setResponse(freightJson);
 
         } catch (error) {
@@ -246,21 +253,21 @@ function xmlToJson(data) {
     return { code, value, estimated_arrival };
 }
 
-function formatFreight({ cepOrigem, cepDestino, weight, length, height, width, diameter }) {
+function formatFreight({ postalCodeOrigin, postalCodeDestiny, weight, length, height, width, value, serviceCode }) {
     const options = {
         nCdEmpresa: "",
         sDsSenha: "",
-        nCdServico: "04014",
-        sCepOrigem: cepOrigem,
-        sCepDestino: cepDestino,
+        nCdServico: serviceCode,
+        sCepOrigem: postalCodeOrigin,
+        sCepDestino: postalCodeDestiny,
         nVlPeso: weight,
         nCdFormato: "1",
         nVlComprimento: length, //centimetros
         nVlAltura: height, //centimetros
         nVlLargura: width, //centimetros
-        nVlDiametro: diameter, //centimetros
+        nVlDiametro: "0", //centimetros
         sCdMaoPropria: "S",
-        nVlValorDeclarado: "0",
+        nVlValorDeclarado: value,
         sCdAvisoRecebimento: "N",
         StrRetorno: "xml"
     }
