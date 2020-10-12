@@ -13,27 +13,27 @@ module.exports = {
         return res.status(result.statusCode).send(result.result);
     },
     async list(req, res) {
-        //if (!req.admin) return denyAccess(res);
         const order = new Order();
-        const result = await order.list(req.query);
+        const result = await order.list(req);
         return res.status(result.statusCode).send(result.result);
     },
     async getById(req, res) {
         const order = new Order();
-        const result = await order.getById(req.params.id);
+        const result = await order.getById(req);
         return res.status(result.statusCode).send(result.result);
     },
     async create(req, res) {
         const order = new Order();
-        const result = await order.create(req.body);
+        const result = await order.create(req);
         return res.status(result.statusCode).send(result.result);
     },
     async update(req, res) {
         const order = new Order();
-        const result = await order.update(req.params.id, req.body);
+        const result = await order.update(req);
         return res.status(result.statusCode).send(result.result);
     },
     async delete(req, res) {
+        //if (!req.admin) return denyAccess(res);
         const order = new Order();
         const result = await order.delete(req.params.id);
         return res.status(result.statusCode).send(result.result);

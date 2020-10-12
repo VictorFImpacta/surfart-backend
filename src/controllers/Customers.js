@@ -14,7 +14,7 @@ module.exports = {
         return res.status(result.statusCode).send(result.result);
     },
     async getById(req, res) {
-        if (req.params.id != req.user_id && !req.admin) return denyAccess(res);
+        // if (req.params.id != req.user_id && !req.admin) return denyAccess(res);
         const customer = new Customer();
         const result = await customer.getById(req.params.id);
         return res.status(result.statusCode).send(result.result);
@@ -30,19 +30,19 @@ module.exports = {
         return res.status(result.statusCode).send(result.result);
     },
     async update(req, res) {
-        if (req.params.id != req.user_id && !req.admin) return denyAccess(res);
+        // if (req.params.id != req.user_id && !req.admin) return denyAccess(res);
         const customer = new Customer();
         const result = await customer.update(req.params.id, req.body);
         return res.status(result.statusCode).send(result.result);
     },
     async delete(req, res) {
-        if (req.params.id != req.user_id && !req.admin) return denyAccess(res);
+        // if (req.params.id != req.user_id && !req.admin) return denyAccess(res);
         const customer = new Customer();
         const result = await customer.delete(req.params.id);
         return res.status(result.statusCode).send(result.result);
     },
     async createAddress(req, res) {
-        if (req.params.id != req.user_id && !req.admin) return denyAccess(res);
+        // if (req.params.id != req.user_id && !req.admin) return denyAccess(res);
         const customer = new Customer();
         const result = await customer.createAddress(req.params.id, req.body);
         return res.status(result.statusCode).send(result.result);

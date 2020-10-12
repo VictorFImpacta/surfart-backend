@@ -56,14 +56,21 @@ class Order {
         }
     };
 
-    async list({ page = 1, limit = 10 }) {
+    async list(request) {
         try {
+
+            const { page = 1, limit = 10 } = request.query;
 
             if (limit > 50) {
                 limit = 50;
             }
 
-            const orders = await OrderModel.paginate({ deleted: false }, { page, limit, select: selectString });
+            let orders = await OrderModel.paginate({ deleted: false, 'customer.customer_id': request.user_id }, { page, limit, select: selectString });
+
+            if (request.admin) {
+                orders = await OrderModel.paginate({ page, limit, select: selectString });
+            }
+
             this.setResponse(orders);
 
         } catch (error) {
@@ -74,17 +81,22 @@ class Order {
         }
     };
 
-    async getById(id) {
+    async getById(request) {
         try {
 
-            const categories = await OrderModel.paginate({ id, deleted: false }, { select: selectString });
+            const id = request.params.id;
+            let order = await OrderModel.find({ id, 'customer.customer_id': request.user_id, deleted: false })
 
-            if (!categories.docs.length) {
-                this.setResponse({ message: 'Categories was not found!' }, 400);
+            if (request.admin) {
+                order = await OrderModel.find({ id }, { select: selectString });
+            }
+
+            if (!order.length) {
+                this.setResponse({ message: 'Order was not found!' }, 400);
                 return this.response();
             }
 
-            this.setResponse(categories.docs[0]);
+            this.setResponse(orders.docs[0]);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -94,12 +106,19 @@ class Order {
         }
     };
 
-    async create(data) {
+    async create(request) {
         try {
+
+            const data = request.body;
 
             const validOrder = this.validate(data, ['customer', 'items', 'value', 'toDelivery', 'billing_address,']);
 
             if (validOrder.isInvalid) {
+                return this.response();
+            }
+
+            if (!request.admin || request.user_id != data.customer._id) {
+                this.setResponse({ message: 'You do not have access for this.' });
                 return this.response();
             }
 
@@ -125,10 +144,17 @@ class Order {
         }
     };
 
-    async update(id, data) {
+    async update(request) {
         try {
 
-            const order = await OrderModel.findOne({ id });
+            const id = request.params.id;
+            const data = request.body;
+
+            let order = await OrderModel.findOne({ id, 'customer.customer_id': request._id, deleted: false });
+
+            if (request.admin) {
+                order = await OrderModel.findOne({ id });
+            }
 
             if (!order) {
                 this.setResponse({ message: 'Order was not found' }, 400);

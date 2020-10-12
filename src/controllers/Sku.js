@@ -1,5 +1,4 @@
 const Sku = require('../models/Sku');
-const { list } = require('./Products');
 
 module.exports = {
     async getAll(req, res) {
@@ -62,7 +61,7 @@ module.exports = {
     async uploadImage(req, res) {
         // if (!req.admin) return denyAccess(res);
         const sku = new Sku();
-        const result = await sku.uploadImage(req.body);
+        const result = await sku.uploadImage(req.files);
         return res.status(result.statusCode).send(result.result);
     }
 };
