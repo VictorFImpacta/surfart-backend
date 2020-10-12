@@ -22,8 +22,8 @@ const PicpaySchema = new mongoose.Schema({
         required: true
     },
     buyer: {
-        firstName: String,
-        lastName: String,
+        first_name: String,
+        last_name: String,
         document: String,
         email: String,
         phone: String,

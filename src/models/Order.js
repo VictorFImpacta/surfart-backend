@@ -4,7 +4,7 @@ mongoose.set('useFindAndModify', false);
 
 const OrderModel = mongoose.model('Order');
 const CustomerModel = mongoose.model('Customer');
-const ProductModel = mongoose.model('Product');
+const SkuModel = mongoose.model('Sku');
 
 const selectString = '-_id -__v';
 
@@ -110,24 +110,29 @@ class Order {
         try {
 
             const data = request.body;
+            const arrayValidate = ['customer_id', 'items', 'value']
 
-            const validOrder = this.validate(data, ['customer', 'items', 'value', 'toDelivery', 'billing_address,']);
+            if (data.toDelivery) {
+                arrayValidate.push('billing_address');
+            }
+
+            const validOrder = this.validate(data, arrayValidate);
 
             if (validOrder.isInvalid) {
                 return this.response();
             }
 
-            if (!request.admin || request.user_id != data.customer._id) {
-                this.setResponse({ message: 'You do not have access for this.' });
-                return this.response();
-            }
+            // if (!request.admin || request.user_id != data.customer._id) {
+            //     this.setResponse({ message: 'You do not have access for this.' }, 400);
+            //     return this.response();
+            // }
 
-            const customerValidate = await validateCustomer(data);
+            const customerValidate = await this.validateCustomer(data);
             if (customerValidate.isInvalid) {
                 return this.response();
             }
 
-            const itemsValidate = await validateItems(data);
+            const itemsValidate = await this.validateItems(data);
             if (itemsValidate.isInvalid) {
                 return this.response();
             }
@@ -221,40 +226,41 @@ class Order {
             return this.response();
         }
     };
-}
 
-async function validateCustomer(data) {
 
-    const customer = await CustomerModel.findById(data.customer_id);
+    async validateCustomer(data) {
 
-    if (!customer) {
-        this.setResponse({ message: `Customer ${data.customer_id} not found` }, 400);
-        return { isInvalid: true };
+        const customer = await CustomerModel.findOne({ id: data.customer_id });
+
+        if (!customer) {
+            this.setResponse({ message: `Customer ${data.customer_id} not found` }, 400);
+            return { isInvalid: true };
+        }
+
+        customer.historic = undefined;
+        customer.__v = undefined;
+        data.customer_id = undefined;
+        data.customer = customer;
+
+        return { isInvalid: false };
+
     }
 
-    customer.historic = undefined;
-    customer.__v = undefined;
-    data.customer_id = undefined;
-    data.customer = customer;
+    async validateItems(data) {
 
-    return { isInvalid: false };
+        const products = await SkuModel.find({ id: data.items })
 
-}
+        if (!products) {
+            this.setResponse({ message: 'These products are not found' }, 400);
+            return { isInvalid: true };
+        }
 
-async function validateItems(data) {
+        data.value = products.reduce((a, b) => a.price + b.price);
+        data.items = products;
 
-    const products = await ProductModel.find().where('id').in(data.items).exec();
+        return { isInvalid: false };
 
-    if (!products) {
-        this.setResponse({ message: 'These products are not found' }, 400);
-        return { isInvalid: true };
     }
-
-    data.value = products.reduce((a, b) => a.price + b.price);
-    data.items = products;
-
-    return { isInvalid: false };
-
 }
 
 function formatRequest(data, isUpdated = false) {

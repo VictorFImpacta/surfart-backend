@@ -9,11 +9,11 @@ const OrderSchema = new mongoose.Schema({
     },
     customer: {
         type: Object,
-        required: true,
+        required: true
     },
     items: {
         type: Array,
-        required: true,
+        required: true
     },
     value: {
         type: Number,
@@ -27,12 +27,10 @@ const OrderSchema = new mongoose.Schema({
         type: Number
     },
     toDelivery: {
-        type: Boolean,
-        required: true
+        type: Boolean
     },
     billing_address: {
-        type: Object,
-        required: true
+        type: Object
     },
     notes: {
         type: String

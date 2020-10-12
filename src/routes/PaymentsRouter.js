@@ -7,6 +7,7 @@ const express = require('express');
 const routes = express.Router();
 
 // PicPay
+routes.get('/picpay', PaymentController.list);
 routes.post('/picpay', PaymentController.create);
 routes.post('/picpay/:id/cancel', PaymentController.cancel);
 routes.get('/picpay/:id', PaymentController.getById);
