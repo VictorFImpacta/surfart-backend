@@ -110,7 +110,7 @@ class Order {
         try {
 
             const data = request.body;
-            const arrayValidate = ['customer_id', 'items', 'value']
+            const arrayValidate = ['items', 'value']
 
             if (data.toDelivery) {
                 arrayValidate.push('billing_address');
@@ -122,20 +122,12 @@ class Order {
                 return this.response();
             }
 
-            // if (!request.admin || request.user_id != data.customer._id) {
-            //     this.setResponse({ message: 'You do not have access for this.' }, 400);
-            //     return this.response();
-            // }
-
-            const customerValidate = await this.validateCustomer(data);
-            if (customerValidate.isInvalid) {
-                return this.response();
-            }
-
             const itemsValidate = await this.validateItems(data);
             if (itemsValidate.isInvalid) {
                 return this.response();
             }
+
+            data.customer = request.user;
 
             formatRequest(data);
             const categoryCreated = await OrderModel.create(data);
@@ -202,7 +194,8 @@ class Order {
         try {
 
             const validate = this.validate(data, ['postalCodeOrigin', 'postalCodeDestiny', 'weight',
-                'length', 'height', 'width', 'value', 'serviceCode']);
+                'length', 'height', 'width', 'value', 'serviceCode'
+            ]);
 
             if (validate.isInvalid) {
                 return this.response();

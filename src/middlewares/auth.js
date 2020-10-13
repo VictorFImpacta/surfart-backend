@@ -24,14 +24,15 @@ module.exports = (req, res, next) => {
         return res.status(401).send({ error: 'Token malformatted' });
     }
 
-    jwt.verify(token, process.env.SECRET, async (err, decoded) => {
+    jwt.verify(token, process.env.SECRET, async(err, decoded) => {
         if (err) {
             return res.status(401).send({ error: 'Invalid Token' });
         }
 
         req.user_id = decoded.id;
         const user = await CustomerModel.findOne({ id: req.user_id });
-        req.admin = user.admin
+        req.user = user;
+        req.admin = user.admin;
 
         return next();
     });
