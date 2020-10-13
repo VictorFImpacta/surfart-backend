@@ -190,6 +190,10 @@ class Order {
         }
     };
 
+    async callback(data) {
+        console.log(data)
+    }
+
     async freight(data) {
         try {
 

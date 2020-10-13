@@ -12,6 +12,11 @@ module.exports = {
         const result = await order.freight(req.body);
         return res.status(result.statusCode).send(result.result);
     },
+    async callback(req, res) {
+        const order = new Order();
+        const result = await order.callback(req.body);
+        return res.status(result.statusCode).send(result.result);
+    },
     async list(req, res) {
         const order = new Order();
         const result = await order.list(req);
