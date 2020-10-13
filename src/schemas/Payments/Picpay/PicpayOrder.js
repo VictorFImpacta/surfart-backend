@@ -7,7 +7,7 @@ const PicpaySchema = new mongoose.Schema({
     },
     callbackUrl: {
         type: String,
-        default: 'http://www.callback.com/surfart'
+        default: 'https://surfart-homolog.herokuapp.com/api/orders/callback'
     },
     returnUrl: {
         type: String,
