@@ -197,7 +197,7 @@ class Order {
     async freight(data) {
         try {
 
-            const validate = this.validate(data, ['postalCodeOrigin', 'postalCodeDestiny', 'weight',
+            const validate = this.validate(data, ['postalCode', 'weight',
                 'length', 'height', 'width', 'value'
             ]);
 
@@ -290,13 +290,13 @@ function xmlToJson(data) {
     return { code, value, estimated_arrival };
 }
 
-function formatFreight({ postalCodeOrigin, postalCodeDestiny, weight, length, height, width, value, serviceCode }) {
+function formatFreight({ postalCode, weight, length, height, width, value, serviceCode }) {
 
     const options = {
         nCdEmpresa: "",
         sDsSenha: "",
         nCdServico: serviceCode,
-        sCepOrigem: postalCodeOrigin,
+        sCepOrigem: postalCode,
         sCepDestino: '03476010', //postalCodeDestiny,
         nVlPeso: weight,
         nCdFormato: "1",
