@@ -209,6 +209,7 @@ class Order {
             04014 SEDEX à vista
             04510 PAC à vista
             */
+
             const sedex = formatFreight({...data, serviceCode: '04014' });
             const pac = formatFreight({...data, serviceCode: '04510' });
             let sedexResponse = await consultCorreios(sedex);
@@ -221,7 +222,7 @@ class Order {
                 return this.response();
             }
 
-            const response = { sedex: sedexResponse, pac: pacResponse };
+            const response = [{...sedexResponse, service: 'Sedex' }, {...pacResponse, service: 'Pac' }];
             this.setResponse(response);
 
         } catch (error) {
@@ -231,7 +232,6 @@ class Order {
             return this.response();
         }
     };
-
 
     async validateCustomer(data) {
 
