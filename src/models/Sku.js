@@ -190,7 +190,6 @@ class Sku {
 
     async decreaseAvailableStock(id, data) {
         try {
-            console.log(id, data)
             const incomingQuantity = data.quantity;
 
             const { availableStock } = await SkuModel.findOne({ id });
@@ -216,7 +215,6 @@ class Sku {
 
     async increaseAvailableStock(id, data) {
         try {
-            console.log(id, data)
 
             const incomingQuantity = data.quantity;
             const { availableStock } = await SkuModel.findOne({ id });
