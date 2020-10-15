@@ -198,23 +198,31 @@ class Order {
         try {
 
             const validate = this.validate(data, ['postalCodeOrigin', 'postalCodeDestiny', 'weight',
-                'length', 'height', 'width', 'value', 'serviceCode'
+                'length', 'height', 'width', 'value'
             ]);
 
             if (validate.isInvalid) {
                 return this.response();
             }
 
-            if (data.serviceCode != '04014' && data.serviceCode != '04510') {
-                this.setResponse({ message: "Invalid 'serviceCode'" }, 400);
+            /*
+            04014 SEDEX à vista
+            04510 PAC à vista
+            */
+            const sedex = formatFreight({...data, serviceCode: '04014' });
+            const pac = formatFreight({...data, serviceCode: '04510' });
+            let sedexResponse = await consultCorreios(sedex);
+            let pacResponse = await consultCorreios(pac);
+            sedexResponse = xmlToJson(sedexResponse.body);
+            pacResponse = xmlToJson(pacResponse.body);
+
+            if (sedexResponse.estimated_arrival == "0") {
+                this.setResponse({ message: 'An error has ocurred. Please, check all fields and try again.' }, 400);
                 return this.response();
             }
 
-            const urlApi = formatFreight(data);
-            const freight = await consultCorreios(urlApi);
-            const freightJson = xmlToJson(freight.body);
-            data.serviceCode == '04014' ? freightJson.code = 'SEDEX à vista' : freightJson.code = 'PAC à vista';
-            this.setResponse(freightJson);
+            const response = { sedex: sedexResponse, pac: pacResponse };
+            this.setResponse(response);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -283,6 +291,7 @@ function xmlToJson(data) {
 }
 
 function formatFreight({ postalCodeOrigin, postalCodeDestiny, weight, length, height, width, value, serviceCode }) {
+
     const options = {
         nCdEmpresa: "",
         sDsSenha: "",
@@ -291,9 +300,9 @@ function formatFreight({ postalCodeOrigin, postalCodeDestiny, weight, length, he
         sCepDestino: postalCodeDestiny,
         nVlPeso: weight,
         nCdFormato: "1",
-        nVlComprimento: length, //centimetros
+        nVlComprimento: length, //centimetros  > 16 - 105 <
+        nVlLargura: width, //centimetros > 11 - 105 < 
         nVlAltura: height, //centimetros
-        nVlLargura: width, //centimetros
         nVlDiametro: "0", //centimetros
         sCdMaoPropria: "S",
         nVlValorDeclarado: value,
