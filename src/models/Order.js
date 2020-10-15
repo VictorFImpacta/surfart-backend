@@ -109,28 +109,25 @@ class Order {
     async create(request) {
         try {
 
-            const data = request.body;
-            const arrayValidate = ['items', 'value']
+            const body = request.body;
 
-            if (data.toDelivery) {
-                arrayValidate.push('billing_address');
-            }
-
-            const validOrder = this.validate(data, arrayValidate);
-
-            if (validOrder.isInvalid) {
+            if (!body.items || !body.items.length) {
+                this.setResponse({ message: 'The fields are missing: items' })
                 return this.response();
             }
 
-            const itemsValidate = await this.validateItems(data);
+            const itemsValidate = await this.validateItems(body);
+
             if (itemsValidate.isInvalid) {
                 return this.response();
             }
 
-            data.customer = request.user;
+            // body.customer = request.user;
+            body.customer = await CustomerModel.findOne({ id: body.customer_id });
 
-            formatRequest(data);
-            const categoryCreated = await OrderModel.create(data);
+            clearCustomer(body);
+            formatRequest(body);
+            const categoryCreated = await OrderModel.create(body);
             this.setResponse(categoryCreated);
 
         } catch (error) {
@@ -253,19 +250,26 @@ class Order {
 
     async validateItems(data) {
 
-        const products = await SkuModel.find({ id: data.items })
+        const products = await SkuModel.find({ id: data.items });
 
-        if (!products) {
-            this.setResponse({ message: 'These products are not found' }, 400);
+        if (!products || !products.length) {
+            this.setResponse({ message: 'Products was not found' }, 400);
             return { isInvalid: true };
         }
 
-        data.value = products.reduce((a, b) => a.price + b.price);
+        data.value = products.reduce((acc, cur) => acc + cur.price, 0);
         data.items = products;
 
         return { isInvalid: false };
 
     }
+}
+
+function clearCustomer(body) {
+    body.customer._id = undefined;
+    body.customer.historic = undefined;
+    body.customer.created_at = undefined;
+    body.customer.__v = undefined;
 }
 
 function formatRequest(data, isUpdated = false) {

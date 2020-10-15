@@ -9,11 +9,11 @@ const OrderSchema = new mongoose.Schema({
     },
     customer: {
         type: Object,
-        required: true
+        required: true,
     },
     items: {
         type: Array,
-        required: true
+        required: true,
     },
     value: {
         type: Number,
@@ -27,7 +27,8 @@ const OrderSchema = new mongoose.Schema({
         type: Number
     },
     toDelivery: {
-        type: Boolean
+        type: Boolean,
+        default: false
     },
     billing_address: {
         type: Object
@@ -35,19 +36,15 @@ const OrderSchema = new mongoose.Schema({
     notes: {
         type: String
     },
-    canceled: {
-        type: Boolean,
-        default: false
-    },
     canceled_reason: {
         type: String
     },
-    shipped: {
-        type: Boolean,
-        default: false
-    },
     shipped_date: {
         type: Date
+    },
+    status: {
+        type: String,
+        enum: ['OPEN', 'PAID', 'SEPARATED', 'SHIPPED', 'FINALIZED', 'CANCELED']
     }
 });
 

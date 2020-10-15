@@ -1,4 +1,4 @@
-module.exports = async (databaseEnvironment) => {
+module.exports = async(databaseEnvironment) => {
 
     const formData = require('express-form-data');
     const express = require('express');
