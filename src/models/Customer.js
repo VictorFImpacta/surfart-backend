@@ -65,7 +65,7 @@ class Customer {
                 return this.response()
             }
 
-            const customer = await Customer.findOne({ email }).select('+password');
+            const customer = await CustomerModel.findOne({ email }).select('+password');
 
             if (!customer) {
                 this.setResponse({ message: 'Customer was not found' }, 400);
@@ -77,7 +77,8 @@ class Customer {
                 return this.response();
             }
 
-            customer.password = undefined;
+            const token = `Bearer ${generateToken({ id: customer.id })}`;
+            this.setResponse({ token });
 
         } catch (error) {
             console.error('Catch_error: ', error);
