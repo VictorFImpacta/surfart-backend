@@ -297,7 +297,7 @@ function formatFreight({ postalCodeOrigin, postalCodeDestiny, weight, length, he
         sDsSenha: "",
         nCdServico: serviceCode,
         sCepOrigem: postalCodeOrigin,
-        sCepDestino: postalCodeDestiny,
+        sCepDestino: '03476010', //postalCodeDestiny,
         nVlPeso: weight,
         nCdFormato: "1",
         nVlComprimento: length, //centimetros  > 16 - 105 <
