@@ -48,6 +48,10 @@ const SkuSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    width: {
+        type: Number,
+        required: true
+    },
     quantity: {
         type: Number,
         required: true
