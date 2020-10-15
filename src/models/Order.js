@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const request = require('request');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
@@ -301,7 +303,7 @@ function formatFreight({ postalCode, weight, length, height, width, value, servi
         sDsSenha: "",
         nCdServico: serviceCode,
         sCepOrigem: postalCode,
-        sCepDestino: '03476010', //postalCodeDestiny,
+        sCepDestino: process.env.CEP, //postalCodeDestiny,
         nVlPeso: weight,
         nCdFormato: "1",
         nVlComprimento: length, //centimetros  > 16 - 105 <
