@@ -36,7 +36,7 @@ class Picpay {
 
     validateCreation(data) {
 
-        const paymentRequiredFields = ['value'];
+        const paymentRequiredFields = ['orderId'];
 
         const missing = new Array();
 

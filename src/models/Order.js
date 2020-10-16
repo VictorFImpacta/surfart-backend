@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
 const OrderModel = mongoose.model('Order');
+const PicpayModel = mongoose.model('Picpay');
 const CustomerModel = mongoose.model('Customer');
 const SkuModel = mongoose.model('Sku');
 
@@ -206,7 +207,28 @@ class Order {
     };
 
     async callback(data) {
-        console.log(data)
+
+        try {
+
+            let { orderId } = await PicpayModel.findOne({ referenceId: data.referenceId });
+
+            const order = await OrderModel.findOne({ id: orderId });
+
+            if (order && order.status != 'OPEN') {
+                this.setResponse({ message: `You cannot update the order status to paid from the current status` }, 400);
+                return this.response();
+            }
+
+            const updatedOrder = await OrderModel.findOneAndUpdate({ id }, { status: 'PAID' }, { new: true });
+            this.setResponse(updatedOrder);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+
+            return this.response();
+        }
     }
 
     async freight(data) {
@@ -225,8 +247,8 @@ class Order {
             04510 PAC à vista
             */
 
-            const sedex = formatFreight({...data, serviceCode: '04014' });
-            const pac = formatFreight({...data, serviceCode: '04510' });
+            const sedex = formatFreight({ ...data, serviceCode: '04014' });
+            const pac = formatFreight({ ...data, serviceCode: '04510' });
             let sedexResponse = await consultCorreios(sedex);
             let pacResponse = await consultCorreios(pac);
             sedexResponse = xmlToJson(sedexResponse.body);
@@ -237,8 +259,56 @@ class Order {
                 return this.response();
             }
 
-            const response = [{...sedexResponse, service: 'Sedex' }, {...pacResponse, service: 'Pac' }];
+            const response = [{ ...sedexResponse, service: 'Sedex' }, { ...pacResponse, service: 'Pac' }];
             this.setResponse(response);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    };
+
+    // async updateStatusToPaid(id) {
+
+    //     try {
+
+    //         const order = await OrderModel.findOne({ id });
+
+    //         if (order.status != 'OPEN') {
+    //             this.setResponse({ message: `You cannot update the order status to paid from the current status` }, 400);
+    //             return this.response();
+    //         }
+
+    //         const updatedCategory = await OrderModel.findOneAndUpdate({ id }, { status: 'PAID' }, { new: true });
+    //         this.setResponse(updatedCategory);
+
+    //     } catch (error) {
+    //         console.error('Catch_error: ', error);
+    //         this.setResponse(error, 500);
+    //     } finally {
+    //         return this.response();
+    //     }
+    // };
+
+    async updateStatusToSeparated(id) {
+
+        try {
+
+            const order = await OrderModel.findOne({ id });
+
+            if (order.status != 'PAID') {
+                this.setResponse({ message: `You cannot update the order status to separated from the current status` }, 400);
+                return this.response();
+            }
+
+            // const updatedCategory = await OrderModel.findOneAndUpdate({ id }, { status: 'SEPARATED' }, { new: true });
+
+            // para cada sku do pedido
+            // retirar do estoque real a quantidade dele no pedido
+
+            this.setResponse(updatedCategory);
 
         } catch (error) {
             console.error('Catch_error: ', error);
