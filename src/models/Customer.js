@@ -60,6 +60,8 @@ class Customer {
 
             const { email, password } = data;
 
+            console.log({ email, password })
+
             if (!email || !password) {
                 this.setResponse({ message: 'Please, fill in all fields required' }, 400);
                 return this.response()
