@@ -8,10 +8,6 @@ const CustomerSchema = new mongoose.Schema({
     id: {
         type: Number
     },
-    password: {
-        type: String,
-        required: true
-    },
     first_name: {
         type: String,
         required: true,
@@ -25,22 +21,33 @@ const CustomerSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    address: {
-        type: Array,
-        default: []
+    password: {
+        type: String,
+        required: true,
+        select: false
     },
     historic: {
         type: Array,
         default: []
     },
+    addresses: [{
+        cep: { type: String, required: true },
+        address: { type: String, required: true },
+        neighborhood: { type: String, required: true },
+        location: { type: String, required: true },
+        state: { type: String, required: true },
+        number: { type: String, required: true },
+        complement: { type: String }
+    }],
     admin: {
         type: Boolean,
         default: false
     }
 });
 
-CustomerSchema.pre('save', async function() {
-    this.password = await bcrypt.hash(this.password, 10);
+CustomerSchema.pre('save', async function () {
+    const times = Math.floor(Math.random())
+    this.password = await bcrypt.hash(this.password, times);
 });
 
 CustomerSchema.plugin(audit);

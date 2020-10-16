@@ -1,5 +1,6 @@
 require('dotenv').config()
 
+const fs = require('fs');
 const AWS = require('aws-sdk');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
@@ -189,7 +190,6 @@ class Sku {
 
     async decreaseAvailableStock(id, data) {
         try {
-
             const incomingQuantity = data.quantity;
 
             const { availableStock } = await SkuModel.findOne({ id });
@@ -286,11 +286,17 @@ class Sku {
         }
     }
 
-    async uploadImage(data) {
+    async uploadImage(files) {
         try {
 
-            const Key = data.key;
-            const Body = Buffer.from(data.value);
+            if (!files || !files.image) {
+                this.setResponse({ message: 'Please, send a file' }, 400);
+                return this.response();
+            }
+
+            const image = fs.readFileSync(files.image.path);
+            const Key = files.image.originalFilename;
+            const Body = Buffer.from(image);
 
             const params = { Bucket: 'surfart', Key, Body };
 
@@ -299,6 +305,7 @@ class Sku {
                     if (err) {
                         reject(err)
                     }
+                    console.log(data)
                     resolve(data)
                 });
             });

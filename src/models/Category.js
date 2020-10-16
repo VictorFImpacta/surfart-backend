@@ -140,8 +140,8 @@ class Category {
 
             formatRequest(data);
             data.updated_at = new Date();
-            const updatedCategory = await CategoryModel.findOneAndUpdate({ id }, data, { new: true });
-            updatedCategory = await CategoryModel.findById(id);
+            let updatedCategory = await CategoryModel.findOneAndUpdate({ id }, data, { new: true });
+            updatedCategory = await CategoryModel.findOne({ id });
             this.setResponse(updatedCategory);
 
         } catch (error) {

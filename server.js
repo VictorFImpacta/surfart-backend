@@ -1,5 +1,6 @@
 module.exports = async(databaseEnvironment) => {
 
+    const formData = require('express-form-data');
     const express = require('express');
     const cors = require('cors');
     const dataBase = require('./src/services/initializeDatabase');
@@ -7,8 +8,9 @@ module.exports = async(databaseEnvironment) => {
 
     const app = express();
     app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(bodyParser.urlencoded({ extended: true }));
     app.use(cors({ origin: '*' }));
+    app.use(formData.parse())
 
     if (databaseEnvironment == 'homolog')
         dataBase.initializeDatabaseHomolog()

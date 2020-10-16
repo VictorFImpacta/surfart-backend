@@ -60,12 +60,14 @@ class Customer {
 
             const { email, password } = data;
 
+            console.log({ email, password })
+
             if (!email || !password) {
                 this.setResponse({ message: 'Please, fill in all fields required' }, 400);
                 return this.response()
             }
 
-            const customer = await Customer.findOne({ email }).select('+password');
+            const customer = await CustomerModel.findOne({ email }).select('+password');
 
             if (!customer) {
                 this.setResponse({ message: 'Customer was not found' }, 400);
@@ -77,7 +79,8 @@ class Customer {
                 return this.response();
             }
 
-            customer.password = undefined;
+            const token = `Bearer ${generateToken({ id: customer.id })}`;
+            this.setResponse({ token });
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -89,7 +92,6 @@ class Customer {
 
     async getAll() {
         try {
-
             const customers = await CustomerModel.find({ deleted: false });
             this.setResponse({ docs: customers });
 
@@ -140,8 +142,6 @@ class Customer {
     };
 
     async create(data) {
-        let customer;
-
         try {
 
             const validCustomer = this.validate(data, ['first_name', 'last_name', 'email', 'password']);
@@ -152,7 +152,8 @@ class Customer {
 
             formatRequest(data);
 
-            customer = await CustomerModel.create(data);
+            const customer = await CustomerModel.create(data);
+            customer.__v = undefined;
             customer.password = undefined;
 
             const token = `Bearer ${generateToken({ id: customer.id })}`;
@@ -226,15 +227,15 @@ class Customer {
             }
 
             const validateArray = ['cep', 'address', 'number', 'complement', 'neighborhood', 'location', 'state'];
-            const addressTransformed = this.validate(addressTransformed, validateArray);
+            const addressTransformed = this.validate(data, validateArray);
 
             if (addressTransformed.isInvalid) {
                 return this.response();
             }
 
-            customer.result.address.push(addressTransformed);
+            customer.result.addresses.push(addressTransformed);
 
-            const customerUpdated = await CustomerModel.findByIdAndUpdate(id, customer.result, { new: true });
+            const customerUpdated = await CustomerModel.findOneAndUpdate({ id }, customer.result, { new: true });
 
             this.setResponse(customerUpdated);
 
@@ -249,7 +250,7 @@ class Customer {
 
 function generateToken(params = {}) {
     return jwt.sign(params, process.env.SECRET, {
-        expiresIn: 86400
+        expiresIn: 3600
     });
 }
 
@@ -261,7 +262,6 @@ function formatRequest(data, isUpdated = false) {
     data.historic = undefined;
     data.address = undefined;
     data.admin = false;
-    data.password = undefined;
     data.id = undefined;
 
     for (const prop in data) {

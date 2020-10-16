@@ -1,10 +1,12 @@
+require('dotenv').config()
+
 const request = require('request');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 
 const OrderModel = mongoose.model('Order');
 const CustomerModel = mongoose.model('Customer');
-const ProductModel = mongoose.model('Product');
+const SkuModel = mongoose.model('Sku');
 
 const selectString = '-_id -__v';
 
@@ -42,11 +44,24 @@ class Order {
         return data;
     }
 
-    async getAll() {
+    async getAll(request) {
         try {
 
-            const orders = await OrderModel.find({ deleted: false });
+            // if (request.user && request.user.admin) {
+            const orders = await OrderModel.find();
             this.setResponse({ docs: orders });
+            return this.response();
+            // }
+
+            // const query = [{
+            //     $match: {
+            //         'deleted': false,
+            //         'customer.id': request.user.id
+            //     }
+            // }];
+
+            // const orders = await OrderModel.aggregate(query);
+            // this.setResponse({ docs: orders });
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -56,14 +71,21 @@ class Order {
         }
     };
 
-    async list({ page = 1, limit = 10 }) {
+    async list(request) {
         try {
+
+            const { page = 1, limit = 10 } = request.query;
 
             if (limit > 50) {
                 limit = 50;
             }
 
-            const orders = await OrderModel.paginate({ deleted: false }, { page, limit, select: selectString });
+            let orders = await OrderModel.paginate({ deleted: false, 'customer.customer_id': request.user_id }, { page, limit, select: selectString });
+
+            if (request.admin) {
+                orders = await OrderModel.paginate({ page, limit, select: selectString });
+            }
+
             this.setResponse(orders);
 
         } catch (error) {
@@ -74,17 +96,22 @@ class Order {
         }
     };
 
-    async getById(id) {
+    async getById(request) {
         try {
 
-            const categories = await OrderModel.paginate({ id, deleted: false }, { select: selectString });
+            const id = request.params.id;
+            let order = await OrderModel.find({ id, 'customer.customer_id': request.user_id, deleted: false })
 
-            if (!categories.docs.length) {
-                this.setResponse({ message: 'Categories was not found!' }, 400);
+            if (request.admin) {
+                order = await OrderModel.find({ id }, { select: selectString });
+            }
+
+            if (!order.length) {
+                this.setResponse({ message: 'Order was not found!' }, 400);
                 return this.response();
             }
 
-            this.setResponse(categories.docs[0]);
+            this.setResponse(orders.docs[0]);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -94,27 +121,28 @@ class Order {
         }
     };
 
-    async create(data) {
+    async create(request) {
         try {
 
-            const validOrder = this.validate(data, ['customer', 'items', 'value', 'toDelivery', 'billing_address,']);
+            const body = request.body;
 
-            if (validOrder.isInvalid) {
+            if (!body.items || !body.items.length) {
+                this.setResponse({ message: 'The fields are missing: items' }, 400)
                 return this.response();
             }
 
-            const customerValidate = await validateCustomer(data);
-            if (customerValidate.isInvalid) {
-                return this.response();
-            }
+            const itemsValidate = await this.validateItems(body);
 
-            const itemsValidate = await validateItems(data);
             if (itemsValidate.isInvalid) {
                 return this.response();
             }
 
-            formatRequest(data);
-            const categoryCreated = await OrderModel.create(data);
+            body.customer = request.user;
+            // body.customer = await CustomerModel.findOne({ id: body.customer_id });
+
+            clearCustomer(body);
+            formatRequest(body);
+            const categoryCreated = await OrderModel.create(body);
             this.setResponse(categoryCreated);
 
         } catch (error) {
@@ -125,10 +153,17 @@ class Order {
         }
     };
 
-    async update(id, data) {
+    async update(request) {
         try {
 
-            const order = await OrderModel.findOne({ id });
+            const id = request.params.id;
+            const data = request.body;
+
+            let order = await OrderModel.findOne({ id, 'customer.customer_id': request._id, deleted: false });
+
+            if (request.admin) {
+                order = await OrderModel.findOne({ id });
+            }
 
             if (!order) {
                 this.setResponse({ message: 'Order was not found' }, 400);
@@ -167,26 +202,40 @@ class Order {
         }
     };
 
+    async callback(data) {
+        console.log(data)
+    }
+
     async freight(data) {
         try {
 
-            const validate = this.validate(data, ['postalCodeOrigin', 'postalCodeDestiny', 'weight',
-                'length', 'height', 'width', 'value', 'serviceCode']);
+            const validate = this.validate(data, ['postalCode', 'weight',
+                'length', 'height', 'width', 'value'
+            ]);
 
             if (validate.isInvalid) {
                 return this.response();
             }
 
-            if (data.serviceCode != '04014' && data.serviceCode != '04510') {
-                this.setResponse({ message: "Invalid 'serviceCode'" }, 400);
+            /*
+            04014 SEDEX à vista
+            04510 PAC à vista
+            */
+
+            const sedex = formatFreight({ ...data, serviceCode: '04014' });
+            const pac = formatFreight({ ...data, serviceCode: '04510' });
+            let sedexResponse = await consultCorreios(sedex);
+            let pacResponse = await consultCorreios(pac);
+            sedexResponse = xmlToJson(sedexResponse.body);
+            pacResponse = xmlToJson(pacResponse.body);
+
+            if (sedexResponse.estimated_arrival == "0") {
+                this.setResponse({ message: 'An error has ocurred. Please, check all fields and try again.' }, 400);
                 return this.response();
             }
 
-            const urlApi = formatFreight(data);
-            const freight = await consultCorreios(urlApi);
-            const freightJson = xmlToJson(freight.body);
-            data.serviceCode == '04014' ? freightJson.code = 'SEDEX à vista' : freightJson.code = 'PAC à vista';
-            this.setResponse(freightJson);
+            const response = [{ ...sedexResponse, service: 'Sedex' }, { ...pacResponse, service: 'Pac' }];
+            this.setResponse(response);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -216,7 +265,7 @@ class Order {
         } finally {
             return this.response();
         }
-    }
+    };
 
     async updateStatusToSeparated(id) {
 
@@ -230,10 +279,10 @@ class Order {
             }
 
             // const updatedCategory = await OrderModel.findOneAndUpdate({ id }, { status: 'SEPARATED' }, { new: true });
-            
+
             // para cada sku do pedido
             // retirar do estoque real a quantidade dele no pedido
-            
+
             this.setResponse(updatedCategory);
 
         } catch (error) {
@@ -242,41 +291,48 @@ class Order {
         } finally {
             return this.response();
         }
+    };
+
+    async validateCustomer(data) {
+
+        const customer = await CustomerModel.findOne({ id: data.customer_id });
+
+        if (!customer) {
+            this.setResponse({ message: `Customer ${data.customer_id} not found` }, 400);
+            return { isInvalid: true };
+        }
+
+        customer.historic = undefined;
+        customer.__v = undefined;
+        data.customer_id = undefined;
+        data.customer = customer;
+
+        return { isInvalid: false };
+
+    }
+
+    async validateItems(data) {
+
+        const products = await SkuModel.find({ id: data.items });
+
+        if (!products || !products.length) {
+            this.setResponse({ message: 'Products was not found' }, 400);
+            return { isInvalid: true };
+        }
+
+        data.value = products.reduce((acc, cur) => acc + cur.price, 0);
+        data.items = products;
+
+        return { isInvalid: false };
+
     }
 }
 
-async function validateCustomer(data) {
-
-    const customer = await CustomerModel.findById(data.customer_id);
-
-    if (!customer) {
-        this.setResponse({ message: `Customer ${data.customer_id} not found` }, 400);
-        return { isInvalid: true };
-    }
-
-    customer.historic = undefined;
-    customer.__v = undefined;
-    data.customer_id = undefined;
-    data.customer = customer;
-
-    return { isInvalid: false };
-
-}
-
-async function validateItems(data) {
-
-    const products = await ProductModel.find().where('id').in(data.items).exec();
-
-    if (!products) {
-        this.setResponse({ message: 'These products are not found' }, 400);
-        return { isInvalid: true };
-    }
-
-    data.value = products.reduce((a, b) => a.price + b.price);
-    data.items = products;
-
-    return { isInvalid: false };
-
+function clearCustomer(body) {
+    body.customer._id = undefined;
+    body.customer.historic = undefined;
+    body.customer.created_at = undefined;
+    body.customer.__v = undefined;
 }
 
 function formatRequest(data, isUpdated = false) {
@@ -301,18 +357,19 @@ function xmlToJson(data) {
     return { code, value, estimated_arrival };
 }
 
-function formatFreight({ postalCodeOrigin, postalCodeDestiny, weight, length, height, width, value, serviceCode }) {
+function formatFreight({ postalCode, weight, length, height, width, value, serviceCode }) {
+
     const options = {
         nCdEmpresa: "",
         sDsSenha: "",
         nCdServico: serviceCode,
-        sCepOrigem: postalCodeOrigin,
-        sCepDestino: postalCodeDestiny,
+        sCepOrigem: postalCode,
+        sCepDestino: process.env.CEP, //postalCodeDestiny,
         nVlPeso: weight,
         nCdFormato: "1",
-        nVlComprimento: length, //centimetros
+        nVlComprimento: length, //centimetros  > 16 - 105 <
+        nVlLargura: width, //centimetros > 11 - 105 < 
         nVlAltura: height, //centimetros
-        nVlLargura: width, //centimetros
         nVlDiametro: "0", //centimetros
         sCdMaoPropria: "S",
         nVlValorDeclarado: value,
@@ -336,9 +393,6 @@ function consultCorreios(urlApi) {
             (err, res, body) => {
                 if (!err && res.statusCode === 200) {
                     resolve({ success: true, body })
-                }
-                if (!err && res.statusCode === 404) {
-                    resolve({ success: false, body });
                 }
                 reject(err);
             });

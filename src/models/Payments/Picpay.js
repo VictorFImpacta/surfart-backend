@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const request = require('request');
-const { get } = require('request');
 mongoose.set('useFindAndModify', false);
 
 const PicpayModel = mongoose.model('Picpay');
@@ -27,43 +26,46 @@ class Picpay {
         };
     }
 
+    sendError(data) {
+        const result = {
+            message: `The fields are missing: ${data.join().replace(/\,/g, ', ')}`
+        };
+        data.isInvalid = true;
+        this.setResponse(result, 400);
+    }
+
     validateCreation(data) {
 
-        function sendError(data) {
-            const result = {
-                message: `The fields are missing: ${data.join().replace(/\,/g, ', ')}`
-            };
-            data.isInvalid = true;
-            this.setResponse(result, 400);
-        }
-
-        const paymentRequiredFields = ['value', 'expiresAt', 'buyer'];
-        const customerRequiredFields = ['firstName', 'lastName', 'document', 'email', 'phone'];
+        const paymentRequiredFields = ['value'];
 
         const missing = new Array();
 
-        paymentRequiredFields.forEach(item => {
-            if (!data[item]) missing.push(item);
-        });
-
-        if (!data.buyer) {
-            sendError(missing);
-        }
-
-        customerRequiredFields.forEach(item => {
-            if (!data.buyer[item]) missing.push(item);
-        });
+        paymentRequiredFields.forEach(item => { if (!data[item]) missing.push(item) });
 
         if (missing.length) {
-            sendError(missing);
+            this.sendError(missing);
+            return { isInvalid: true };
         }
 
         return data;
     }
 
-    async create(data) {
+    async list() {
         try {
+            const savedRequest = await PicpayModel.find();
+            this.setResponse(savedRequest)
+        } catch (error) {
+            this.setResponse({ error }, 500)
+            return this.response();
+        } finally {
+            return this.response();
+        }
+    }
 
+    async create(request) {
+        let savedRequest;
+        try {
+            const data = request.body
             const validRequest = this.validateCreation(data);
 
             if (validRequest.isInvalid) {
@@ -74,23 +76,24 @@ class Picpay {
             data.callbackUrl = undefined;
             data.returnUrl = undefined;
 
-            const savedRequest = await PicpayModel.create(data);
+            const sevenDaysInMiliseconds = 24 * 60 * 60 * 1000 * 7 // 7 dias em milissegundos
+            const todayInMiliseconds = new Date().getTime();
 
-            try {
+            data.buyer = request.user;
+            data.expiresAt = new Date(sevenDaysInMiliseconds + todayInMiliseconds);
+            savedRequest = await PicpayModel.create(data);
 
-                const paymentCreated = await postRequest(url, savedRequest);
-                const redirectCreated = await PicpayRedirectModel.create(paymentCreated);
+            const paymentCreated = await postRequest(url, savedRequest);
+            console.log('paymentCreated: ', paymentCreated);
+            const redirectCreated = await PicpayRedirectModel.create(paymentCreated);
+            console.log('paymentCreated: ', redirectCreated);
 
-                this.setResponse(redirectCreated);
-
-            } catch (error) {
-                console.log('error: ', error);
-                await PicpayModel.findByIdAndRemove(savedRequest._id);
-            }
+            this.setResponse(redirectCreated);
 
         } catch (error) {
             console.error('Catch_error: ', error);
             this.setResponse(error, 500);
+            await PicpayModel.findByIdAndRemove(savedRequest._id);
         } finally {
             return this.response();
         }
