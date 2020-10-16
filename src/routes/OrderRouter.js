@@ -11,11 +11,12 @@ routes.post('/freight', OrderController.freight);
 
 // Rota autenticada
 routes.use(AuthenticateMiddleware);
-routes.post('/callback', OrderController.callback);
 routes.get('/', OrderController.getAll);
+routes.get('/', OrderController.list);
+routes.get('/:id', OrderController.getById);
+routes.post('/callback', OrderController.callback);
 routes.post('/', OrderController.create);
 routes.put('/:id', OrderController.update);
 routes.delete('/:id', OrderController.delete);
-routes.get('/:id', OrderController.getById);
 
 module.exports = routes;

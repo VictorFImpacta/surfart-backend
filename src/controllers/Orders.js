@@ -2,9 +2,9 @@ const Order = require('../models/Order');;
 
 module.exports = {
     async getAll(req, res) {
-        if (!req.user.admin) return denyAccess(res);
+        // if (!req.user.admin) return denyAccess(res);
         const order = new Order();
-        const result = await order.getAll(req.query);
+        const result = await order.getAll(req);
         return res.status(result.statusCode).send(result.result);
     },
     async freight(req, res) {

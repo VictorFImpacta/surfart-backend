@@ -29,8 +29,8 @@ module.exports = (req, res, next) => {
             return res.status(401).send({ error: 'Invalid Token' });
         }
 
-        req.user = user;
         const user = await CustomerModel.findOne({ id: decoded.id });
+        req.user = user;
 
         return next();
     });

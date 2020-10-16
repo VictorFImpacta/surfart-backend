@@ -44,10 +44,23 @@ class Order {
         return data;
     }
 
-    async getAll() {
+    async getAll(request) {
         try {
 
-            const orders = await OrderModel.find({ deleted: false });
+            if (request.user.admin) {
+                const orders = await OrderModel.find();
+                this.setResponse({ docs: orders });
+                return this.response();
+            }
+
+            const query = [{
+                $match: {
+                    'deleted': false,
+                    'customer.id': request.user.id
+                }
+            }];
+
+            const orders = await OrderModel.aggregate(query);
             this.setResponse({ docs: orders });
 
         } catch (error) {
@@ -114,7 +127,7 @@ class Order {
             const body = request.body;
 
             if (!body.items || !body.items.length) {
-                this.setResponse({ message: 'The fields are missing: items' })
+                this.setResponse({ message: 'The fields are missing: items' }, 400)
                 return this.response();
             }
 
@@ -124,8 +137,8 @@ class Order {
                 return this.response();
             }
 
-            // body.customer = request.user;
-            body.customer = await CustomerModel.findOne({ id: body.customer_id });
+            body.customer = request.user;
+            // body.customer = await CustomerModel.findOne({ id: body.customer_id });
 
             clearCustomer(body);
             formatRequest(body);
