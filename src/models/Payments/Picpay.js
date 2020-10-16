@@ -36,19 +36,11 @@ class Picpay {
 
     validateCreation(data) {
 
-        const paymentRequiredFields = ['value', 'buyer', 'expiresAt'];
-        const customerRequiredFields = ['first_name', 'last_name', 'document', 'email'];
+        const paymentRequiredFields = ['value'];
 
         const missing = new Array();
 
         paymentRequiredFields.forEach(item => { if (!data[item]) missing.push(item) });
-
-        if (!data.buyer) {
-            this.sendError(missing);
-            return { isInvalid: true };
-        }
-
-        customerRequiredFields.forEach(item => { if (!data.buyer[item]) missing.push(item) });
 
         if (missing.length) {
             this.sendError(missing);
@@ -70,10 +62,10 @@ class Picpay {
         }
     }
 
-    async create(data) {
+    async create(request) {
         let savedRequest;
         try {
-
+            const data = request.body
             const validRequest = this.validateCreation(data);
 
             if (validRequest.isInvalid) {
@@ -86,7 +78,8 @@ class Picpay {
 
             const sevenDaysInMiliseconds = 24 * 60 * 60 * 1000 * 7 // 7 dias em milissegundos
             const todayInMiliseconds = new Date().getTime();
-            // pegar dadoo do usuario
+
+            data.buyer = request.user;
             data.expiresAt = new Date(sevenDaysInMiliseconds + todayInMiliseconds);
             savedRequest = await PicpayModel.create(data);
 
