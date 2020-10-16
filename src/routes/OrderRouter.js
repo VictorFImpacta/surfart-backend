@@ -14,12 +14,12 @@ routes.post('/freight', OrderController.freight);
 routes.get('/', OrderController.getAll);
 routes.get('/', OrderController.list);
 routes.get('/:id', OrderController.getById);
-routes.post('/callback', OrderController.callback);
+routes.post('/740129c9-9073-4a78-8565-95ef30c1881f/callback', OrderController.callback);
 routes.post('/', OrderController.create);
 routes.put('/:id', OrderController.update);
 routes.delete('/:id', OrderController.delete);
 
-routes.put('/status/paid/:id', OrderController.updateStatusToPaid);
+// routes.put('/status/paid/:id', OrderController.updateStatusToPaid);
 routes.put('/status/separated/:id', OrderController.updateStatusToSeparated);
 
 module.exports = routes;
