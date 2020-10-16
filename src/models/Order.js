@@ -99,19 +99,19 @@ class Order {
     async getById(request) {
         try {
 
-            const id = request.params.id;
-            let order = await OrderModel.find({ id, 'customer.customer_id': request.user_id, deleted: false })
+            // const id = request.params.id;
+            // let order = await OrderModel.find({ id, 'customer.customer_id': request.user_id, deleted: false })
 
-            if (request.admin) {
-                order = await OrderModel.find({ id }, { select: selectString });
-            }
+            // if (request.admin) {
+            const order = await OrderModel.find({ id: request.params.id });
+            // }
 
-            if (!order.length) {
-                this.setResponse({ message: 'Order was not found!' }, 400);
-                return this.response();
-            }
+            // if (!order.length) {
+            //     this.setResponse({ message: 'Order was not found!' }, 400);
+            //     return this.response();
+            // }
 
-            this.setResponse(orders.docs[0]);
+            this.setResponse(order);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -137,8 +137,11 @@ class Order {
                 return this.response();
             }
 
-            body.customer = request.user;
-            // body.customer = await CustomerModel.findOne({ id: body.customer_id });
+            body.customer = await CustomerModel.findOne({ id: 1 });
+
+            // if(!)
+
+            // body.customer = request.user;
 
             clearCustomer(body);
             formatRequest(body);
