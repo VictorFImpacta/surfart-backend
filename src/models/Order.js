@@ -103,7 +103,7 @@ class Order {
             // let order = await OrderModel.find({ id, 'customer.customer_id': request.user_id, deleted: false })
 
             // if (request.admin) {
-            const order = await OrderModel.find({ id: request.params.id });
+            const order = await OrderModel.findOne({ id: request.params.id });
             // }
 
             // if (!order.length) {
