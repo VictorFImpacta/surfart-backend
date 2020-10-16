@@ -5,7 +5,7 @@ const audit = require('./plugins/index');
 
 const ItemSchema = new mongoose.Schema({
     _id: {
-        type: ObjectId,
+        type: mongoose.Types.ObjectId,
         required: true
     },
     quantity: {
