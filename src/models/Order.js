@@ -138,8 +138,13 @@ class Order {
                 return this.response();
             }
 
+            body.value = 0;
+
+            for (const item of body.items) {
+                body.value += item.item.price * item.quantity;
+            }
+
             body.customer = request.user;
-            console.log(request.user)
 
             clearCustomer(body);
             formatRequest(body);
@@ -333,20 +338,25 @@ class Order {
 
     }
 
-    async validateItems(data) {
+    async validateItems(body) {
 
-        const products = await SkuModel.find({ id: data.items });
+        const _ids = body.items.map(item => item._id);
+        const products = await SkuModel.find({ _id: _ids });
+        const response = new Array();
+        body.items.forEach(item => {
+            products.find(data => {
+                if (data._id == item._id) item = { item: data, quantity: item.quantity }
+            })
+            response.push(item);
+        });
+        body.items = response;
 
         if (!products || !products.length) {
             this.setResponse({ message: 'Products was not found' }, 400);
             return { isInvalid: true };
         }
 
-        data.value = products.reduce((acc, cur) => acc + cur.price, 0);
-        data.items = products;
-
         return { isInvalid: false };
-
     }
 }
 
