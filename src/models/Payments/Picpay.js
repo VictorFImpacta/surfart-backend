@@ -86,7 +86,7 @@ class Picpay {
 
             const sevenDaysInMiliseconds = 24 * 60 * 60 * 1000 * 7 // 7 dias em milissegundos
             const todayInMiliseconds = new Date().getTime();
-
+            // pegar dadoo do usuario
             data.expiresAt = new Date(sevenDaysInMiliseconds + todayInMiliseconds);
             savedRequest = await PicpayModel.create(data);
 

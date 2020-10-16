@@ -10,7 +10,7 @@ const routes = express.Router();
 routes.post('/freight', OrderController.freight);
 
 // Rota autenticada
-routes.use(AuthenticateMiddleware);
+// routes.use(AuthenticateMiddleware);
 routes.get('/', OrderController.getAll);
 routes.get('/', OrderController.list);
 routes.get('/:id', OrderController.getById);
