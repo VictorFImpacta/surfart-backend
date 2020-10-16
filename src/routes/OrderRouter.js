@@ -15,4 +15,7 @@ routes.post('/', OrderController.create);
 routes.put('/:id', OrderController.update);
 routes.delete('/:id', OrderController.delete);
 
+routes.put('/status/paid/:id', OrderController.updateStatusToPaid);
+routes.put('/status/separated/:id', OrderController.updateStatusToSeparated);
+
 module.exports = routes;

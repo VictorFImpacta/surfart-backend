@@ -195,6 +195,54 @@ class Order {
             return this.response();
         }
     };
+
+    async updateStatusToPaid(id) {
+
+        try {
+
+            const order = await OrderModel.findOne({ id });
+
+            if (order.status != 'OPEN') {
+                this.setResponse({ message: `You cannot update the order status to paid from the current status` }, 400);
+                return this.response();
+            }
+
+            const updatedCategory = await OrderModel.findOneAndUpdate({ id }, { status: 'PAID' }, { new: true });
+            this.setResponse(updatedCategory);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
+    async updateStatusToSeparated(id) {
+
+        try {
+
+            const order = await OrderModel.findOne({ id });
+
+            if (order.status != 'PAID') {
+                this.setResponse({ message: `You cannot update the order status to separated from the current status` }, 400);
+                return this.response();
+            }
+
+            // const updatedCategory = await OrderModel.findOneAndUpdate({ id }, { status: 'SEPARATED' }, { new: true });
+            
+            // para cada sku do pedido
+            // retirar do estoque real a quantidade dele no pedido
+            
+            this.setResponse(updatedCategory);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
 }
 
 async function validateCustomer(data) {
