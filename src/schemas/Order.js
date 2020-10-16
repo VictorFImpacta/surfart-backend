@@ -4,8 +4,8 @@ const mongooseAutoIncrement = require('mongoose-auto-increment');
 const audit = require('./plugins/index');
 
 const ItemSchema = new mongoose.Schema({
-    _id: {
-        type: mongoose.Types.ObjectId,
+    id: {
+        type: Number,
         required: true
     },
     quantity: {
