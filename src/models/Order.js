@@ -219,7 +219,7 @@ class Order {
                 return this.response();
             }
 
-            const updatedOrder = await OrderModel.findOneAndUpdate({ id }, { status: 'PAID' }, { new: true });
+            const updatedOrder = await OrderModel.findOneAndUpdate({ id: order.id }, { status: 'PAID' }, { new: true });
             this.setResponse(updatedOrder);
 
         } catch (error) {
