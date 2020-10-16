@@ -47,21 +47,21 @@ class Order {
     async getAll(request) {
         try {
 
-            if (request.user.admin) {
-                const orders = await OrderModel.find();
-                this.setResponse({ docs: orders });
-                return this.response();
-            }
-
-            const query = [{
-                $match: {
-                    'deleted': false,
-                    'customer.id': request.user.id
-                }
-            }];
-
-            const orders = await OrderModel.aggregate(query);
+            // if (request.user && request.user.admin) {
+            const orders = await OrderModel.find();
             this.setResponse({ docs: orders });
+            return this.response();
+            // }
+
+            // const query = [{
+            //     $match: {
+            //         'deleted': false,
+            //         'customer.id': request.user.id
+            //     }
+            // }];
+
+            // const orders = await OrderModel.aggregate(query);
+            // this.setResponse({ docs: orders });
 
         } catch (error) {
             console.error('Catch_error: ', error);
