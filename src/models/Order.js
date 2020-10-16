@@ -138,11 +138,8 @@ class Order {
                 return this.response();
             }
 
-            body.customer = await CustomerModel.findOne({ id: 1 });
-
-            // if(!)
-
-            // body.customer = request.user;
+            body.customer = request.user;
+            console.log(request.user)
 
             clearCustomer(body);
             formatRequest(body);
@@ -247,8 +244,8 @@ class Order {
             04510 PAC à vista
             */
 
-            const sedex = formatFreight({ ...data, serviceCode: '04014' });
-            const pac = formatFreight({ ...data, serviceCode: '04510' });
+            const sedex = formatFreight({...data, serviceCode: '04014' });
+            const pac = formatFreight({...data, serviceCode: '04510' });
             let sedexResponse = await consultCorreios(sedex);
             let pacResponse = await consultCorreios(pac);
             sedexResponse = xmlToJson(sedexResponse.body);
@@ -259,7 +256,7 @@ class Order {
                 return this.response();
             }
 
-            const response = [{ ...sedexResponse, service: 'Sedex' }, { ...pacResponse, service: 'Pac' }];
+            const response = [{...sedexResponse, service: 'Sedex' }, {...pacResponse, service: 'Pac' }];
             this.setResponse(response);
 
         } catch (error) {

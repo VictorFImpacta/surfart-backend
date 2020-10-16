@@ -21,7 +21,7 @@ module.exports = {
     },
     async auth(req, res) {
         const customer = new Customer();
-        const result = await customer.auth(req.body);
+        const result = await customer.auth(req);
         return res.status(result.statusCode).send(result.result);
     },
     async create(req, res) {

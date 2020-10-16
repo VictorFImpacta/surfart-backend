@@ -58,9 +58,15 @@ class Customer {
     async auth(data) {
         try {
 
-            console.log(data)
+            let email, password;
 
-            const { email, password } = data;
+            if (data.query && data.query.email && data.query.password) {
+                email = data.query.email;
+                password = data.query.password;
+            } else {
+                email = data.body.email;
+                password = data.body.password;
+            }
 
             console.log({ email, password })
 
