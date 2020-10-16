@@ -88,7 +88,7 @@ class Customer {
             }
 
             const token = `Bearer ${generateToken({ id: customer.id })}`;
-            this.setResponse({ token });
+            this.setResponse({ name: `${customer.first_name} ${customer.last_name}`, token });
 
         } catch (error) {
             console.error('Catch_error: ', error);
