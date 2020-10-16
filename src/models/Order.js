@@ -48,21 +48,21 @@ class Order {
     async getAll(request) {
         try {
 
-            // if (request.user && request.user.admin) {
-            const orders = await OrderModel.find();
+            if (request.user && request.user.admin) {
+                const orders = await OrderModel.find();
+                this.setResponse(orders);
+                return this.response();
+            }
+
+            const query = [{
+                $match: {
+                    'deleted': false,
+                    'customer.id': request.user.id
+                }
+            }];
+
+            const orders = await OrderModel.aggregate(query);
             this.setResponse({ docs: orders });
-            return this.response();
-            // }
-
-            // const query = [{
-            //     $match: {
-            //         'deleted': false,
-            //         'customer.id': request.user.id
-            //     }
-            // }];
-
-            // const orders = await OrderModel.aggregate(query);
-            // this.setResponse({ docs: orders });
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -81,7 +81,7 @@ class Order {
                 limit = 50;
             }
 
-            let orders = await OrderModel.paginate({ deleted: false, 'customer.customer_id': request.user_id }, { page, limit, select: selectString });
+            let orders = await OrderModel.paginate({ deleted: false, 'customer.customer_id': request.user.user_id }, { page, limit, select: selectString });
 
             if (request.admin) {
                 orders = await OrderModel.paginate({ page, limit, select: selectString });
