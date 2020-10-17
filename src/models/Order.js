@@ -231,7 +231,25 @@ class Order {
             console.error('Catch_error: ', error);
             this.setResponse(error, 500);
         } finally {
+            return this.response();
+        }
+    }
 
+    async viaCep(cep) {
+        try {
+            const url = `https://viacep.com.br/ws/${cep}/json/`;
+            let response = await make_request(url);
+
+            if (response.error) {
+                this.setResponse({ message: 'invalid Cep' }, 400);
+                return this.response();
+            }
+
+            this.setResponse(response.body);
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
             return this.response();
         }
     }
@@ -254,8 +272,8 @@ class Order {
 
             const sedex = formatFreight({...data, serviceCode: '04014' });
             const pac = formatFreight({...data, serviceCode: '04510' });
-            let sedexResponse = await consultCorreios(sedex);
-            let pacResponse = await consultCorreios(pac);
+            let sedexResponse = await make_request(sedex);
+            let pacResponse = await make_request(pac);
             sedexResponse = xmlToJson(sedexResponse.body);
             pacResponse = xmlToJson(pacResponse.body);
 
@@ -422,10 +440,13 @@ function formatFreight({ postalCode, weight, length, height, width, value, servi
     return `http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?${queryString}`;
 }
 
-function consultCorreios(urlApi) {
+function make_request(urlApi) {
     return new Promise((resolve, reject) => {
         request(urlApi,
             (err, res, body) => {
+                if (body && body.includes('Erro 400')) {
+                    resolve({ error: true });
+                }
                 if (!err && res.statusCode === 200) {
                     resolve({ success: true, body })
                 }

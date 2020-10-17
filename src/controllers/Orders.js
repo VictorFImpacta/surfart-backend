@@ -57,6 +57,11 @@ module.exports = {
         const order = new Order();
         const result = await order.updateStatusToPaid(req.params.id);
         return res.status(result.statusCode).send(result.result);
+    },
+    async viacep(req, res) {
+        const order = new Order();
+        const result = await order.viaCep(req.params.cep);
+        return res.status(result.statusCode).send(result.result);
     }
 };
 

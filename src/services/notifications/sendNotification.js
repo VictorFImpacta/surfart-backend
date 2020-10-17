@@ -3,7 +3,7 @@ require('dotenv').config();
 module.exports = async(userEmail, subject, html) => {
     try {
         const sender = CreateTransport();
-        console.log(sender.options)
+
         const receiver = CreateReceiver(userEmail, subject, html);
 
         sender.sendMail(receiver, (error) => {
