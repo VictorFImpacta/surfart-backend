@@ -7,7 +7,10 @@ module.exports = async(userEmail, subject, html) => {
         const receiver = CreateReceiver(userEmail, subject, html);
 
         sender.sendMail(receiver, (error) => {
-            if (error) return { error }
+            if (error) {
+                console.log('Falha ao enviar email: ', error);
+                return { error }
+            }
         });
         console.log('Email enviado!: ', userEmail, subject)
         return { error: false }
