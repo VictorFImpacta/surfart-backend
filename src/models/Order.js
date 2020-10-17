@@ -1,5 +1,7 @@
 require('dotenv').config()
 
+const sendEmail = require('../services/notifications/sendNotification');
+const template = require('../services/notifications/notification-template');
 const request = require('request');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
@@ -148,8 +150,9 @@ class Order {
 
             clearCustomer(body);
             formatRequest(body);
-            const categoryCreated = await OrderModel.create(body);
-            this.setResponse(categoryCreated);
+            const orderCreated = await OrderModel.create(body);
+            this.setResponse(orderCreated);
+            await sendEmail(request.user.email, `Pedido ${orderCreated.id} criado com sucesso!`, template.created_order());
 
         } catch (error) {
             console.error('Catch_error: ', error);

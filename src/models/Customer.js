@@ -152,6 +152,8 @@ class Customer {
     async create(data) {
         try {
 
+            console.log(data)
+
             const validCustomer = this.validate(data, ['first_name', 'last_name', 'email', 'password']);
 
             if (validCustomer.isInvalid) {

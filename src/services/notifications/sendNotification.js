@@ -1,12 +1,14 @@
 require('dotenv').config();
 
-module.exports = async(userEmail, queue, name) => {
+module.exports = async(userEmail, subject, html) => {
     try {
         const sender = CreateTransport();
-
-        const receiver = CreateReceiver(userEmail, queue, name);
+        console.log(sender.options)
+        const receiver = CreateReceiver(userEmail, subject, html);
 
         sender.sendMail(receiver, (error) => {
+            console.log('receiver: ', receiver);
+            console.log('error: ', error);
             if (error) return { error }
         });
         return { error: false }
@@ -16,12 +18,12 @@ module.exports = async(userEmail, queue, name) => {
     }
 }
 
-function CreateReceiver(userEmail, queue, name) {
+function CreateReceiver(userEmail, subject, html) {
     return {
         from: process.env.MAIL_USER,
         to: userEmail,
-        subject: `${queue}`,
-        html: `<h1 style="color:green;">${name} is Active!</h1>`
+        subject,
+        html
     }
 };
 
