@@ -35,12 +35,9 @@ function CreateTransport() {
         port: 587,
         secure: false,
         auth: {
-            user: process.env.MAIL_USER,
+            user: 'surfarttech@gmail.com',
             pass: process.env.MAIL_PASSWORD
         }
     });
     return transporter;
 }
-
-
-// await sendEmail(process.env.MAIL_USER, 'Teacher', messageParse.name);
