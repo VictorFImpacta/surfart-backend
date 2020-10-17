@@ -1,11 +1,14 @@
 require('dotenv').config();
 
+const sendEmail = require('../services/notifications/sendNotification');
+const template = require('../services/notifications/notification-template');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const CustomerModel = mongoose.model('Customer');
+const RecoveryModel = mongoose.model('Recovery');
 
 const selectString = '-_id -__v -password';
 
@@ -52,6 +55,74 @@ class Customer {
 
         for (const prop in data) {
             if (!data[prop]) delete data[prop];
+        }
+    }
+
+    async recovery(body) {
+        try {
+
+            const { email } = body;
+
+            if (!email) {
+                this.setResponse({ message: 'Please, fill in all fields required' }, 400);
+                return this.response();
+            }
+
+            const customer = await CustomerModel.findOne({ email });
+
+            if (!customer) {
+                this.setResponse({ message: 'Customer was not found' }, 400);
+                return this.response();
+            }
+
+            const recovery_code = new Date().getTime().toString().slice(5, 12);
+            const recovery = await RecoveryModel.create({ email, recovery_code });
+
+            await sendEmail(email, 'Recuperação de senha - SurfArt', template.recovery(recovery_code));
+
+            this.setResponse({ email: recovery.email, recovery_check: recovery.recovery_check });
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
+    async recovery_validate(request) {
+        try {
+
+            const { recovery_check } = request.params;
+            const { recovery_code } = request.body;
+
+            if (!recovery_check || !recovery_code) {
+                this.setResponse({ message: 'Please, fill in all fields required' }, 400);
+                return this.response();
+            }
+
+            const recovery = await RecoveryModel.findOne({ recovery_check, recovered: false });
+
+            if (!recovery) {
+                this.setResponse({ message: 'Recovery was not found' }, 400);
+                return this.response();
+            }
+
+            if (recovery_code != recovery.recovery_code) {
+                this.setResponse({ message: 'Invalid Code' }, 400);
+                return this.response();
+            }
+
+            recovery.recovered = true;
+            await RecoveryModel.create(recovery);
+
+            this.setResponse({ message: "Vou te autenticar cara, aguenta ai!" });
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
         }
     }
 

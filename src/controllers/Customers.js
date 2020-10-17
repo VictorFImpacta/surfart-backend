@@ -19,6 +19,16 @@ module.exports = {
         const result = await customer.getById(req.params.id);
         return res.status(result.statusCode).send(result.result);
     },
+    async recovery(req, res) {
+        const customer = new Customer();
+        const result = await customer.recovery(req.body);
+        return res.status(result.statusCode).send(result.result);
+    },
+    async recovery_validate(req, res) {
+        const customer = new Customer();
+        const result = await customer.recovery_validate(req);
+        return res.status(result.statusCode).send(result.result);
+    },
     async auth(req, res) {
         const customer = new Customer();
         const result = await customer.auth(req);
