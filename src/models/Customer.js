@@ -116,7 +116,13 @@ class Customer {
             recovery.recovered = true;
             await RecoveryModel.create(recovery);
 
-            this.setResponse({ message: "Vou te autenticar cara, aguenta ai!" });
+            const { first_name, last_name, id } = await CustomerModel.findOne({ email: recovery.email });
+
+            const token = `Bearer ${generateToken({ id })}`;
+
+            console.log('Usuário recuperado: ', `${first_name} ${last_name}`);
+
+            this.setResponse({ name: `${first_name} ${last_name}`, token });
 
         } catch (error) {
             console.error('Catch_error: ', error);
