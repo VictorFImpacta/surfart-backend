@@ -337,7 +337,7 @@ class Customer {
 
 function generateToken(params = {}) {
     return jwt.sign(params, process.env.SECRET, {
-        expiresIn: 3600
+        expiresIn: 86400
     });
 }
 
