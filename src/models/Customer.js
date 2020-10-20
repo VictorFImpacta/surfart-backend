@@ -109,6 +109,7 @@ class Customer {
             }
 
             if (recovery_code != recovery.recovery_code) {
+                console.log({ recovery_code, recovery })
                 this.setResponse({ message: 'Invalid Code' }, 400);
                 return this.response();
             }
