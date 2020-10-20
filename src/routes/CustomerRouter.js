@@ -13,8 +13,8 @@ routes.post('/recovery', CustomerController.recovery);
 routes.post('/recovery/:recovery_check', CustomerController.recovery_validate);
 
 // Rota autenticada
-// routes.use(AuthenticateMiddleware);
-routes.post('/password', CustomerController.recovery_validate);
+routes.use(AuthenticateMiddleware);
+routes.post('/password', CustomerController.recovery_password);
 routes.get('/:id', CustomerController.getById);
 routes.post('/:id/address', CustomerController.createAddress);
 routes.put('/:id', CustomerController.update);

@@ -133,28 +133,41 @@ class Customer {
     }
 
     async recovery_password(request) {
-        const { body, user } = request;
+        try {
+            const { body, user } = request;
 
-        if (!body.old_password || !body.new_password) {
-            this.setResponse({ message: 'Please, fill in all required fields' }, 400);
+            if (!body.old_password || !body.new_password) {
+                this.setResponse({ message: 'Please, fill in all required fields' }, 400);
+                return this.response();
+            }
+
+            const customer = await CustomerModel.findOne({ email: user.email }).select('+password');
+
+            console.log({
+                request: body,
+                customer
+            })
+
+            if (!await bcrypt.compare(body.old_password, customer.password)) {
+                this.setResponse({ message: 'Invalid password' }, 400);
+                return this.response();
+            }
+
+            user.password = body.new_password;
+            const updated_password = await CustomerModel.create(user);
+
+            if (!updated_password) {
+                this.setResponse({ message: 'An error has ocurred' }, 500);
+                return this.response();
+            }
+
+            this.setResponse({ message: 'success' }, 200);
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
             return this.response();
         }
-
-        if (!await bcrypt.compare(old_password, customer.password)) {
-            this.setResponse({ message: 'Invalid password' }, 400);
-            return this.response();
-        }
-
-        user.password = body.new_password;
-        const updated_password = await CustomerModel.create(user);
-
-        if (!updated_password) {
-            this.setResponse({ message: 'An error has ocurred' }, 500);
-            return this.response();
-        }
-
-        this.setResponse({ message: 'success' }, 200);
-
     }
 
     async auth(data) {
@@ -283,26 +296,15 @@ class Customer {
 
     };
 
-    async update(id, data) {
+    async update(request) {
         try {
 
-            const customer = await CustomerModel.findOne({ id });
+            const { body, user } = request;
 
-            if (!customer) {
-                this.setResponse({ message: 'Customer was not found' }, 400);
-                return this.response();
-            }
+            formatRequest(body);
 
-            data.password = undefined;
-            formatRequest(data, true);
-
-            for (const prop in data) {
-                customer[prop] = data[prop];
-            };
-
-            data.updated_at = new Date();
-
-            const updatedCustomer = await CustomerModel.findOneAndUpdate({ id }, customer, { new: true });
+            body.updated_at = new Date();
+            const updatedCustomer = await CustomerModel.create({...user, ...body });
             updatedCustomer.__v = undefined;
 
             this.setResponse(updatedCustomer);
@@ -374,7 +376,6 @@ function formatRequest(data, isUpdated = false) {
     data.created_at = undefined;
     data.deleted = undefined;
     data.historic = undefined;
-    data.address = undefined;
     data.admin = false;
     data.id = undefined;
 
