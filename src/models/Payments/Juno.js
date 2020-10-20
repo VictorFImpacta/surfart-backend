@@ -1,11 +1,11 @@
+require('dotenv').config()
+
 const mongoose = require('mongoose');
 const request = require('request');
 mongoose.set('useFindAndModify', false);
 
-const PicpayModel = mongoose.model('Picpay');
-const PicpayRedirectModel = mongoose.model('PicpayRedirect');
-
-const url = process.env.PICPAY;
+const JunoModel = mongoose.model('Juno');
+const JunoRedirectModel = mongoose.model('JunoRedirect');
 
 class Juno {
 
@@ -34,55 +34,61 @@ class Juno {
         this.setResponse(result, 400);
     }
 
-    validateCreation(data) {
-
-        const paymentRequiredFields = ['orderId'];
-
-        const missing = new Array();
-
-        paymentRequiredFields.forEach(item => { if (!data[item]) missing.push(item) });
-
-        if (missing.length) {
-            this.sendError(missing);
-            return { isInvalid: true };
-        }
-
-        return data;
+    async list() {
+        this.setResponse({ message: "working" })
+        return this.response();
     }
-
 
     async create(request) {
         let savedRequest;
         try {
-            const data = request.body
-            const validRequest = this.validateCreation(data);
 
-            if (validRequest.isInvalid) {
+            await refresh_token();
+
+            const { body, user } = request;
+
+            if (!body) {
+                this.setResponse({ message: 'Please, fill in all required fields' });
                 return this.response();
             }
 
-            data.referenceId = new Date().getTime();
-            data.callbackUrl = undefined;
-            data.returnUrl = undefined;
+            let dueDate = new Date().getTime() + 24 * 60 * 60 * 1000 * 3; // 3 dias no futuro em milissegundos
+            dueDate = new Date(dueDate).toLocaleString('pt-br', 'yyyy-mm-dd').split(' ')[0];
 
-            const sevenDaysInMiliseconds = 24 * 60 * 60 * 1000 * 7 // 7 dias em milissegundos
-            const todayInMiliseconds = new Date().getTime();
+            const payload = {
+                charge: {
+                    description: body.description,
+                    amount: body.amount,
+                    dueDate,
+                    paymentAdvance: true
+                },
+                billing: {
+                    name: `${user.first_name} ${user.last_name}`,
+                    email: user.email,
+                    ...body.customer,
+                    notify: true
+                }
+            }
 
-            data.buyer = request.user;
-            data.expiresAt = new Date(sevenDaysInMiliseconds + todayInMiliseconds);
-            savedRequest = await PicpayModel.create(data);
+            const url = process.env.JUNO + '/charges';
+            const headers = {
+                'X-Resource-Token': process.env.JUNO_RESOURCE_TOKEN,
+                'X-Api-Version': 2,
+                'Authorization': process.env.JUNO_ACCESS_TOKEN
+            }
 
-            const paymentCreated = await postRequest(url, savedRequest);
-            console.log('paymentCreated: ', paymentCreated);
-            const redirectCreated = await PicpayRedirectModel.create(paymentCreated);
-            console.log('paymentCreated: ', redirectCreated);
+            const paymentCreated = await postRequest(url, payload, headers);
+            savedRequest = await JunoModel.create(payload);
 
+            const redirectCreated = await JunoRedirectModel.create(paymentCreated);
+
+            console.log(`Boleto emitido! Valor: ${payload.charge.amount}`)
             this.setResponse(redirectCreated);
 
         } catch (error) {
             console.error('Catch_error: ', error);
             this.setResponse(error, 500);
-            await PicpayModel.findByIdAndRemove(savedRequest._id);
+            await JunoModel.findByIdAndRemove(savedRequest._id);
         } finally {
             return this.response();
         }
@@ -90,38 +96,21 @@ class Juno {
 
 }
 
-function postRequest(url, body) {
+async function refresh_token() {
+    const url = process.env.JUNO + '/authorization-server/oauth/token?grant_type=client_credentials';
+    const response = await postRequest(url, {}, { 'Authorization': process.env.JUNO_BASIC_TOKEN });
+    process.env.JUNO_ACCESS_TOKEN = 'Bearer ' + response.access_token;
+}
+
+function postRequest(url, body, headers) {
     return new Promise((resolve, reject) => {
         request.post({
             url,
             body,
-            headers: {
-                'x-picpay-token': process.env.PICPAY_TOKEN,
-                'x-seller-token': process.env.SELLER_TOKEN
-            },
+            headers,
             json: true
         }, (err, res, body) => {
-            if (body.message && body.message == 'Transação já foi cancelada') {
-                resolve(body);
-            }
             if (!err && res.statusCode == 200) {
-                resolve(body);
-            }
-            reject(err);
-        });
-    });
-}
-
-function getRequest(url) {
-    return new Promise((resolve, reject) => {
-        request({
-            url,
-            headers: {
-                'x-picpay-token': process.env.PICPAY_TOKEN,
-                'x-seller-token': process.env.SELLER_TOKEN
-            },
-        }, (err, res, body) => {
-            if (!err && res.statusCode === 200) {
                 resolve(body);
             }
             reject(err);

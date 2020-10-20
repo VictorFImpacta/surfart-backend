@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const PicpaySchema = new mongoose.Schema({
+const JunoSchema = new mongoose.Schema({
     charge: {
         description: {
             type: String,
@@ -10,22 +10,22 @@ const PicpaySchema = new mongoose.Schema({
             type: String,
             required: true
         },
-        dueDate: "2020-10-19",
-        maxOverdueDays: 0,
-        fine: 0,
-        interest: "0.00",
-        discountAmount: "0.00",
-        discountDays: -1,
-        paymentTypes: [],
-        paymentAdvance: true
+        dueDate: {
+            type: Date,
+            default: new Date()
+        },
+        paymentAdvance: {
+            type: Boolean,
+            default: true
+        }
     },
-    buyer: {
-        first_name: String,
-        last_name: String,
+    billing: {
+        name: String,
         document: String,
         email: String,
         phone: String,
+        notify: { type: Boolean, default: true }
     }
 });
 
-mongoose.model('Picpay', PicpaySchema);
+mongoose.model('Juno', JunoSchema);
