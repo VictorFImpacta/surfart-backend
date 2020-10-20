@@ -16,6 +16,7 @@ module.exports = {
         `
         return template;
     },
+
     recovery(recovery_code) {
         const template = `
         <div style="width: 100vw; height: 100vh; background: #2c2c2c; display: flex; flex-direction: row; justify-content: center; align-items: center">

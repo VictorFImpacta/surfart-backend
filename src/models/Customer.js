@@ -132,6 +132,31 @@ class Customer {
         }
     }
 
+    async recovery_password(request) {
+        const { body, user } = request;
+
+        if (!body.old_password || !body.new_password) {
+            this.setResponse({ message: 'Please, fill in all required fields' }, 400);
+            return this.response();
+        }
+
+        if (!await bcrypt.compare(old_password, customer.password)) {
+            this.setResponse({ message: 'Invalid password' }, 400);
+            return this.response();
+        }
+
+        user.password = body.new_password;
+        const updated_password = await CustomerModel.create(user);
+
+        if (!updated_password) {
+            this.setResponse({ message: 'An error has ocurred' }, 500);
+            return this.response();
+        }
+
+        this.setResponse({ message: 'success' }, 200);
+
+    }
+
     async auth(data) {
         try {
 
@@ -268,11 +293,13 @@ class Customer {
                 return this.response();
             }
 
+            data.password = undefined;
             formatRequest(data, true);
 
             for (const prop in data) {
                 customer[prop] = data[prop];
             };
+
             data.updated_at = new Date();
 
             const updatedCustomer = await CustomerModel.findOneAndUpdate({ id }, customer, { new: true });

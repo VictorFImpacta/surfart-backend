@@ -19,6 +19,12 @@ module.exports = {
         const result = await customer.getById(req.params.id);
         return res.status(result.statusCode).send(result.result);
     },
+    async recovery_validate(req, res) {
+        // if (req.params.id != req.user.id) return denyAccess(res);
+        const customer = new Customer();
+        const result = await customer.recovery_password(req);
+        return res.status(result.statusCode).send(result.result);
+    },
     async recovery(req, res) {
         const customer = new Customer();
         const result = await customer.recovery(req.body);
