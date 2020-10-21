@@ -56,7 +56,6 @@ class Juno {
             }
 
             const dueDate = formatDate();
-            console.log(dueDate)
 
             const payload = {
                 charge: {
@@ -79,8 +78,16 @@ class Juno {
                 'X-Api-Version': 2,
                 'Authorization': process.env.JUNO_ACCESS_TOKEN
             }
-            console.log(payload)
+
             const paymentCreated = await postRequest(url, payload, headers);
+
+            payload.order_id = body.order_id;
+            savedRequest = await JunoModel.create(payload);
+
+            const redirectCreated = await JunoRedirectModel.create(paymentCreated);
+
+            console.log(`Boleto emitido! Valor: ${payload.charge.amount}`)
+            this.setResponse(redirectCreated);
 
 
         } catch (error) {
