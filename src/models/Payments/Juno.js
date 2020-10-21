@@ -94,6 +94,12 @@ class Juno {
         }
     };
 
+    async webhook(request) {
+        console.log('Chamou webhook!')
+        const { body, user, params, query, headers } = request;
+        console.log({ body, user, params, query, headers })
+    }
+
 }
 
 async function refresh_token() {

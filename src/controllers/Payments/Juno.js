@@ -1,6 +1,11 @@
 const Juno = require('../../models/Payments/Juno');
 
 module.exports = {
+    async webhook(req, res) {
+        const juno = new Juno();
+        const result = await juno.webhook(req);
+        return res.status(result.statusCode).send(result.result);
+    },
     async list(req, res) {
         const juno = new Juno();
         const result = await juno.list();
