@@ -80,9 +80,12 @@ class Juno {
             }
 
             const paymentCreated = await postRequest(url, payload, headers);
+            console.log(paymentCreated)
             savedRequest = await JunoModel.create(payload);
+            console.log(savedRequest)
 
             const redirectCreated = await JunoRedirectModel.create(paymentCreated);
+            console.log(redirectCreated)
 
             console.log(`Boleto emitido! Valor: ${payload.charge.amount}`)
             this.setResponse(redirectCreated);
