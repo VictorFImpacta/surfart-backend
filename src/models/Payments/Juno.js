@@ -35,7 +35,7 @@ class Juno {
     }
 
     async list() {
-        this.setResponse({ message: "working" })
+        this.setResponse({ message: "working" });
         return this.response();
     }
 
