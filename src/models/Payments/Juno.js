@@ -123,7 +123,6 @@ async function refresh_token() {
     const url = process.env.JUNO + '/authorization-server/oauth/token?grant_type=client_credentials';
     const response = await postRequest(url, {}, { 'Authorization': process.env.JUNO_BASIC_TOKEN });
     process.env.JUNO_ACCESS_TOKEN = 'Bearer ' + response.access_token;
-    console.log('JUNO_ACCESS_TOKEN: ', process.env.JUNO_ACCESS_TOKEN)
 }
 
 function postRequest(url, body, headers) {
