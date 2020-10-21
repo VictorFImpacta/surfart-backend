@@ -18,7 +18,7 @@ routes.post('/picpay/:id/cancel', Picpay_PaymentController.cancel);
 routes.get('/picpay/:id', Picpay_PaymentController.getById);
 
 routes.get('/juno', Juno_PaymentController.list);
-routes.post('/juno', Juno_PaymentController.webhook);
+routes.post('/juno/webhook', Juno_PaymentController.webhook);
 routes.post('/juno', Juno_PaymentController.create);
 routes.post('/juno/:id/cancel', Juno_PaymentController.cancel);
 routes.get('/juno/:id', Juno_PaymentController.getById);
