@@ -14,6 +14,7 @@ routes.post('/recovery/:recovery_check', CustomerController.recovery_validate);
 
 // Rota autenticada
 routes.use(AuthenticateMiddleware);
+routes.post('/validate/auth', CustomerController.validate_token);
 routes.post('/password', CustomerController.recovery_password);
 routes.get('/:id', CustomerController.getById);
 routes.post('/:id/address', CustomerController.createAddress);

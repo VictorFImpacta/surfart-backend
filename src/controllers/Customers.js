@@ -25,6 +25,11 @@ module.exports = {
         const result = await customer.recovery_password(req);
         return res.status(result.statusCode).send(result.result);
     },
+    async validate_token(req, res) {
+        const customer = new Customer();
+        const result = await customer.validate_token(req);
+        return res.status(result.statusCode).send(result.result);
+    },
     async recovery(req, res) {
         const customer = new Customer();
         const result = await customer.recovery(req.body);
