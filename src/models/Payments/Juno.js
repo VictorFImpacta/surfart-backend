@@ -56,6 +56,7 @@ class Juno {
 
             let dueDate = new Date().getTime() + 24 * 60 * 60 * 1000 * 3; // 3 dias no futuro em milissegundos
             dueDate = new Date(dueDate).toLocaleString('pt-br', 'yyyy-MM-dd').split(' ')[0];
+            dueDate = FormataStringData(dueDate);
 
             const payload = {
                 charge: {
@@ -120,6 +121,14 @@ class Juno {
         }
     }
 
+}
+
+function FormataStringData(data) {
+    var dia = data.split("/")[0];
+    var mes = data.split("/")[1];
+    var ano = data.split("/")[2];
+
+    return ano + '-' + ("0" + mes).slice(-2) + '-' + ("0" + dia).slice(-2);
 }
 
 async function refresh_token() {
