@@ -8,6 +8,7 @@ const OrderModel = mongoose.model('Order');
 const PicpayModel = mongoose.model('Picpay');
 const CustomerModel = mongoose.model('Customer');
 const SkuModel = mongoose.model('Sku');
+const { decreaseRealStock } = require('../controllers/sku');
 
 const selectString = '-_id -__v';
 
@@ -300,12 +301,18 @@ class Order {
                 return this.response();
             }
 
-            // const updatedCategory = await OrderModel.findOneAndUpdate({ id }, { status: 'SEPARATED' }, { new: true });
+            const updatedOrder = await OrderModel.findOneAndUpdate({ id }, { status: 'SEPARATED' }, { new: true });
 
-            // para cada sku do pedido
-            // retirar do estoque real a quantidade dele no pedido
+            const orderItems = updatedOrder.items.map(sku => {
+                return { id: sku.item.id, quantity: sku.item.quantity - sku.quantity }
+            })
 
-            this.setResponse(updatedCategory);
+            for (const orderItem of orderItems) {
+
+                await decreaseRealStock(orderItem.id, { quantity: orderItem.quantity })
+            }
+
+            this.setResponse(updatedOrder);
 
         } catch (error) {
             console.error('Catch_error: ', error);
