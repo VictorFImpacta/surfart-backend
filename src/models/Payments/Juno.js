@@ -1,5 +1,7 @@
 require('dotenv').config()
 
+const sendEmail = require('../../services/notifications/sendNotification');
+const template = require('../../services/notifications/notification-template');
 const mongoose = require('mongoose');
 const request = require('request');
 mongoose.set('useFindAndModify', false);
@@ -95,9 +97,24 @@ class Juno {
     };
 
     async webhook(request) {
-        console.log('Chamou webhook!')
-        const { body, user, params, query, headers } = request;
-        console.log({ body, user, params, query, headers })
+        try {
+            console.log('Chamou webhook!');
+            const { body, user, params, query, headers } = request;
+            console.log({ body, user, params, query, headers });
+            await sendEmail('erickk474@gmail.com', `Webhook criado com sucesso!`, template.recovery(JSON.stringify({
+                body,
+                user,
+                params,
+                query,
+                headers
+            })));
+            this.setResponse({ message: 'success' }, 200)
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
     }
 
 }
