@@ -295,7 +295,7 @@ class Sku {
             }
 
             const image = fs.readFileSync(files.image.path);
-            const Key = files.image.originalFilename;
+            const Key = `produtos/${files.image.originalFilename}`;
             const Body = Buffer.from(image);
 
             const params = { Bucket: 'surfart', Key, Body };

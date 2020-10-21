@@ -1,11 +1,14 @@
 require('dotenv').config();
 
+const sendEmail = require('../services/notifications/sendNotification');
+const template = require('../services/notifications/notification-template');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const CustomerModel = mongoose.model('Customer');
+const RecoveryModel = mongoose.model('Recovery');
 
 const selectString = '-_id -__v -password';
 
@@ -55,10 +58,142 @@ class Customer {
         }
     }
 
+    async recovery(body) {
+        try {
+
+            const { email } = body;
+
+            if (!email) {
+                this.setResponse({ message: 'Please, fill in all fields required' }, 400);
+                return this.response();
+            }
+
+            const customer = await CustomerModel.findOne({ email });
+
+            if (!customer) {
+                this.setResponse({ message: 'Customer was not found' }, 400);
+                return this.response();
+            }
+
+            const recovery_code = new Date().getTime().toString().slice(5, 12);
+            const recovery = await RecoveryModel.create({ email, recovery_code });
+
+            await sendEmail(email, 'Recuperação de senha - SurfArt', template.recovery(recovery_code));
+
+            this.setResponse({ email: recovery.email, recovery_check: recovery.recovery_check });
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
+    async recovery_validate(request) {
+        try {
+
+            const { recovery_check } = request.params;
+            const { recovery_code } = request.body;
+
+            if (!recovery_check || !recovery_code) {
+                this.setResponse({ message: 'Please, fill in all fields required' }, 400);
+                return this.response();
+            }
+
+            const recovery = await RecoveryModel.findOne({ recovery_check, recovered: false });
+
+            if (!recovery) {
+                this.setResponse({ message: 'Recovery was not found' }, 400);
+                return this.response();
+            }
+
+            if (recovery_code != recovery.recovery_code) {
+                console.log({ recovery_code, recovery })
+                this.setResponse({ message: 'Invalid Code' }, 400);
+                return this.response();
+            }
+
+            recovery.recovered = true;
+            await RecoveryModel.create(recovery);
+
+            const { first_name, last_name, id } = await CustomerModel.findOne({ email: recovery.email });
+
+            const token = `Bearer ${generateToken({ id })}`;
+
+            console.log('Usuário recuperado: ', `${first_name} ${last_name}`);
+
+            this.setResponse({ name: `${first_name} ${last_name}`, token });
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
+    async recovery_password(request) {
+        try {
+            const { body, user } = request;
+
+            if (!body.old_password || !body.new_password) {
+                this.setResponse({ message: 'Please, fill in all required fields' }, 400);
+                return this.response();
+            }
+
+            const customer = await CustomerModel.findOne({ email: user.email }).select('+password');
+
+            console.log({
+                request: body,
+                customer
+            })
+
+            if (!await bcrypt.compare(body.old_password, customer.password)) {
+                this.setResponse({ message: 'Invalid password' }, 400);
+                return this.response();
+            }
+
+            user.password = body.new_password;
+            const updated_password = await CustomerModel.create(user);
+
+            if (!updated_password) {
+                this.setResponse({ message: 'An error has ocurred' }, 500);
+                return this.response();
+            }
+
+            this.setResponse({ message: 'success' }, 200);
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
+    async validate_token(request) {
+        try {
+            this.setResponse({ message: 'success' })
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
     async auth(data) {
         try {
 
-            const { email, password } = data;
+            let email, password;
+
+            if (data.query && data.query.email && data.query.password) {
+                email = data.query.email;
+                password = data.query.password;
+            } else {
+                email = data.body.email;
+                password = data.body.password;
+            }
 
             console.log({ email, password })
 
@@ -80,7 +215,7 @@ class Customer {
             }
 
             const token = `Bearer ${generateToken({ id: customer.id })}`;
-            this.setResponse({ token });
+            this.setResponse({ name: `${customer.first_name} ${customer.last_name}`, token });
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -144,6 +279,8 @@ class Customer {
     async create(data) {
         try {
 
+            console.log(data)
+
             const validCustomer = this.validate(data, ['first_name', 'last_name', 'email', 'password']);
 
             if (validCustomer.isInvalid) {
@@ -151,6 +288,12 @@ class Customer {
             }
 
             formatRequest(data);
+
+            if (data.addresses) {
+                for (const address of addresses) {
+                    addresses.cep = addresses.cep.replace(/\D+/g, '');
+                }
+            }
 
             const customer = await CustomerModel.create(data);
             customer.__v = undefined;
@@ -171,24 +314,20 @@ class Customer {
 
     };
 
-    async update(id, data) {
+    async update(request) {
         try {
 
-            const customer = await CustomerModel.findOne({ id });
+            const { body, user } = request;
 
-            if (!customer) {
-                this.setResponse({ message: 'Customer was not found' }, 400);
-                return this.response();
+            formatRequest(body);
+
+            if (body.addresses) {
+                body.addresses.cep = body.addresses.cep.replace(/\D+/g, '');
+                body.addresses = [body.addresses];
             }
 
-            formatRequest(data, true);
-
-            for (const prop in data) {
-                customer[prop] = data[prop];
-            };
-            data.updated_at = new Date();
-
-            const updatedCustomer = await CustomerModel.findOneAndUpdate({ id }, customer, { new: true });
+            body.updated_at = new Date();
+            const updatedCustomer = await CustomerModel.findByIdAndUpdate(user._id, body);
             updatedCustomer.__v = undefined;
 
             this.setResponse(updatedCustomer);
@@ -250,7 +389,7 @@ class Customer {
 
 function generateToken(params = {}) {
     return jwt.sign(params, process.env.SECRET, {
-        expiresIn: 3600
+        expiresIn: 86400
     });
 }
 
@@ -260,7 +399,6 @@ function formatRequest(data, isUpdated = false) {
     data.created_at = undefined;
     data.deleted = undefined;
     data.historic = undefined;
-    data.address = undefined;
     data.admin = false;
     data.id = undefined;
 

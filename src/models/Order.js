@@ -1,5 +1,7 @@
 require('dotenv').config()
 
+const sendEmail = require('../services/notifications/sendNotification');
+const template = require('../services/notifications/notification-template');
 const request = require('request');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
@@ -49,21 +51,21 @@ class Order {
     async getAll(request) {
         try {
 
-            // if (request.user && request.user.admin) {
-            const orders = await OrderModel.find();
+            if (request.user && request.user.admin) {
+                const orders = await OrderModel.find();
+                this.setResponse(orders);
+                return this.response();
+            }
+
+            const query = [{
+                $match: {
+                    'deleted': false,
+                    'customer.id': request.user.id
+                }
+            }];
+
+            const orders = await OrderModel.aggregate(query);
             this.setResponse({ docs: orders });
-            return this.response();
-            // }
-
-            // const query = [{
-            //     $match: {
-            //         'deleted': false,
-            //         'customer.id': request.user.id
-            //     }
-            // }];
-
-            // const orders = await OrderModel.aggregate(query);
-            // this.setResponse({ docs: orders });
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -82,7 +84,7 @@ class Order {
                 limit = 50;
             }
 
-            let orders = await OrderModel.paginate({ deleted: false, 'customer.customer_id': request.user_id }, { page, limit, select: selectString });
+            let orders = await OrderModel.paginate({ deleted: false, 'customer.customer_id': request.user.user_id }, { page, limit, select: selectString });
 
             if (request.admin) {
                 orders = await OrderModel.paginate({ page, limit, select: selectString });
@@ -101,19 +103,19 @@ class Order {
     async getById(request) {
         try {
 
-            const id = request.params.id;
-            let order = await OrderModel.find({ id, 'customer.customer_id': request.user_id, deleted: false })
+            // const id = request.params.id;
+            // let order = await OrderModel.find({ id, 'customer.customer_id': request.user_id, deleted: false })
 
-            if (request.admin) {
-                order = await OrderModel.find({ id }, { select: selectString });
-            }
+            // if (request.admin) {
+            const order = await OrderModel.findOne({ id: request.params.id });
+            // }
 
-            if (!order.length) {
-                this.setResponse({ message: 'Order was not found!' }, 400);
-                return this.response();
-            }
+            // if (!order.length) {
+            //     this.setResponse({ message: 'Order was not found!' }, 400);
+            //     return this.response();
+            // }
 
-            this.setResponse(orders.docs[0]);
+            this.setResponse(order);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -139,13 +141,22 @@ class Order {
                 return this.response();
             }
 
+            body.value = 0;
+
+            for (const item of body.items) {
+                body.value += item.item.price * item.quantity;
+            }
+
             body.customer = request.user;
-            // body.customer = await CustomerModel.findOne({ id: body.customer_id });
 
             clearCustomer(body);
             formatRequest(body);
-            const categoryCreated = await OrderModel.create(body);
-            this.setResponse(categoryCreated);
+
+            if (!body.billing_address) body.billing_address = body.customer.addresses[0];
+
+            const orderCreated = await OrderModel.create(body);
+            this.setResponse(orderCreated);
+            await sendEmail(request.user.email, `Pedido ${orderCreated.id} criado com sucesso!`, template.created_order());
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -217,14 +228,32 @@ class Order {
                 return this.response();
             }
 
-            const updatedOrder = await OrderModel.findOneAndUpdate({ id }, { status: 'PAID' }, { new: true });
+            const updatedOrder = await OrderModel.findOneAndUpdate({ id: order.id }, { status: 'PAID' }, { new: true });
             this.setResponse(updatedOrder);
 
         } catch (error) {
             console.error('Catch_error: ', error);
             this.setResponse(error, 500);
         } finally {
+            return this.response();
+        }
+    }
 
+    async viaCep(cep) {
+        try {
+            const url = `https://viacep.com.br/ws/${cep}/json/`;
+            let response = await make_request(url);
+
+            if (response.error) {
+                this.setResponse({ message: 'invalid Cep' }, 400);
+                return this.response();
+            }
+
+            this.setResponse(response.body);
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
             return this.response();
         }
     }
@@ -245,10 +274,10 @@ class Order {
             04510 PAC à vista
             */
 
-            const sedex = formatFreight({ ...data, serviceCode: '04014' });
-            const pac = formatFreight({ ...data, serviceCode: '04510' });
-            let sedexResponse = await consultCorreios(sedex);
-            let pacResponse = await consultCorreios(pac);
+            const sedex = formatFreight({...data, serviceCode: '04014' });
+            const pac = formatFreight({...data, serviceCode: '04510' });
+            let sedexResponse = await make_request(sedex);
+            let pacResponse = await make_request(pac);
             sedexResponse = xmlToJson(sedexResponse.body);
             pacResponse = xmlToJson(pacResponse.body);
 
@@ -257,7 +286,7 @@ class Order {
                 return this.response();
             }
 
-            const response = [{ ...sedexResponse, service: 'Sedex' }, { ...pacResponse, service: 'Pac' }];
+            const response = [{...sedexResponse, service: 'Sedex' }, {...pacResponse, service: 'Pac' }];
             this.setResponse(response);
 
         } catch (error) {
@@ -340,20 +369,25 @@ class Order {
 
     }
 
-    async validateItems(data) {
+    async validateItems(body) {
 
-        const products = await SkuModel.find({ id: data.items });
+        const _ids = body.items.map(item => item._id);
+        const products = await SkuModel.find({ _id: _ids });
+        const response = new Array();
+        body.items.forEach(item => {
+            products.find(data => {
+                if (data._id == item._id) item = { item: data, quantity: item.quantity }
+            })
+            response.push(item);
+        });
+        body.items = response;
 
         if (!products || !products.length) {
             this.setResponse({ message: 'Products was not found' }, 400);
             return { isInvalid: true };
         }
 
-        data.value = products.reduce((acc, cur) => acc + cur.price, 0);
-        data.items = products;
-
         return { isInvalid: false };
-
     }
 }
 
@@ -416,10 +450,13 @@ function formatFreight({ postalCode, weight, length, height, width, value, servi
     return `http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?${queryString}`;
 }
 
-function consultCorreios(urlApi) {
+function make_request(urlApi) {
     return new Promise((resolve, reject) => {
         request(urlApi,
             (err, res, body) => {
+                if (body && body.includes('Erro 400')) {
+                    resolve({ error: true });
+                }
                 if (!err && res.statusCode === 200) {
                     resolve({ success: true, body })
                 }

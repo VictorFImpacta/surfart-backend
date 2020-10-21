@@ -2,7 +2,7 @@ const Order = require('../models/Order');;
 
 module.exports = {
     async getAll(req, res) {
-        // if (!req.user.admin) return denyAccess(res);
+        if (!req.user.admin) return denyAccess(res);
         const order = new Order();
         const result = await order.getAll(req);
         return res.status(result.statusCode).send(result.result);
@@ -56,6 +56,11 @@ module.exports = {
     async updateStatusToSeparated(req, res) {
         const order = new Order();
         const result = await order.updateStatusToPaid(req.params.id);
+        return res.status(result.statusCode).send(result.result);
+    },
+    async viacep(req, res) {
+        const order = new Order();
+        const result = await order.viaCep(req.params.cep);
         return res.status(result.statusCode).send(result.result);
     }
 };

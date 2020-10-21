@@ -3,24 +3,24 @@ const mongoosePaginate = require('mongoose-paginate');
 const mongooseAutoIncrement = require('mongoose-auto-increment');
 const audit = require('./plugins/index');
 
-const ItemSchema = new mongoose.Schema({
-    _id: {
-        type: ObjectId,
-        required: true
-    },
-    quantity: {
-        type: Number,
-        required: true
-    },
-    unitPrice: {
-        type: Number,
-        required: true
-    },
-    totalPrice: {
-        type: Number,
-        required: true
-    }
-})
+// const ItemSchema = new mongoose.Schema({
+//     id: {
+//         type: Number,
+//         required: true
+//     },
+//     quantity: {
+//         type: Number,
+//         required: true
+//     },
+//     unitPrice: {
+//         type: Number,
+//         required: true
+//     },
+//     totalPrice: {
+//         type: Number,
+//         required: true
+//     }
+// })
 
 const OrderSchema = new mongoose.Schema({
     id: {
@@ -31,7 +31,7 @@ const OrderSchema = new mongoose.Schema({
         required: true,
     },
     items: {
-        type: [ItemSchema],
+        type: Array,
         required: true,
     },
     value: {
