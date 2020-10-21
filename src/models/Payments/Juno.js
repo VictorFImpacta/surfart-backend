@@ -49,7 +49,7 @@ class Juno {
 
             const { body, user } = request;
 
-            if (!body) {
+            if (!body || !body.order_id) {
                 this.setResponse({ message: 'Please, fill in all required fields' });
                 return this.response();
             }
@@ -80,9 +80,9 @@ class Juno {
             }
 
             const paymentCreated = await postRequest(url, payload, headers);
-            console.log(paymentCreated)
+
+            payload.order_id = body.order_id;
             savedRequest = await JunoModel.create(payload);
-            console.log(savedRequest)
 
             const redirectCreated = await JunoRedirectModel.create(paymentCreated);
             console.log(redirectCreated)
@@ -136,6 +136,9 @@ function postRequest(url, body, headers) {
             headers,
             json: true
         }, (err, res, body) => {
+            if (body && !body.access_token && !body._embedded && body.status != 200) {
+                reject(body);
+            }
             if (!err && res.statusCode == 200) {
                 resolve(body);
             }

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const JunoSchema = new mongoose.Schema({
+    order_id: { type: String, required: true },
     charge: {
         description: {
             type: String,
