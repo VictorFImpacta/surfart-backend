@@ -55,7 +55,7 @@ class Juno {
             }
 
             let dueDate = new Date().getTime() + 24 * 60 * 60 * 1000 * 3; // 3 dias no futuro em milissegundos
-            dueDate = new Date(dueDate).toLocaleString('pt-br', 'yyyy-mm-dd').split(' ')[0];
+            dueDate = new Date(dueDate).toLocaleString('pt-br', 'yyyy-MM-dd').split(' ')[0];
 
             const payload = {
                 charge: {
