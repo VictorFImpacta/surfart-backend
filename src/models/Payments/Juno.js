@@ -4,6 +4,7 @@ const sendEmail = require('../../services/notifications/sendNotification');
 const template = require('../../services/notifications/notification-template');
 const mongoose = require('mongoose');
 const request = require('request');
+const dayjs = require('dayjs');
 mongoose.set('useFindAndModify', false);
 
 const JunoModel = mongoose.model('Juno');
@@ -54,9 +55,8 @@ class Juno {
                 return this.response();
             }
 
-            let dueDate = new Date().getTime() + 24 * 60 * 60 * 1000 * 3; // 3 dias no futuro em milissegundos
-            dueDate = new Date(dueDate).toLocaleString('pt-br', 'yyyy-MM-dd').split(' ')[0];
-            dueDate = FormataStringData(dueDate);
+            const dueDate = formatDate();
+            console.log(dueDate)
 
             const payload = {
                 charge: {
@@ -82,14 +82,6 @@ class Juno {
             console.log(payload)
             const paymentCreated = await postRequest(url, payload, headers);
 
-            payload.order_id = body.order_id;
-            savedRequest = await JunoModel.create(payload);
-
-            const redirectCreated = await JunoRedirectModel.create(paymentCreated);
-            console.log(redirectCreated)
-
-            console.log(`Boleto emitido! Valor: ${payload.charge.amount}`)
-            this.setResponse(redirectCreated);
 
         } catch (error) {
             console.error('Catch_error: ', error);
@@ -123,12 +115,9 @@ class Juno {
 
 }
 
-function FormataStringData(data) {
-    var dia = data.split("/")[0];
-    var mes = data.split("/")[1];
-    var ano = data.split("/")[2];
-
-    return ano + '-' + ("0" + mes).slice(-2) + '-' + ("0" + dia).slice(-2);
+function formatDate() {
+    const dateThreeDaysInFuture = new Date().getTime() + 24 * 60 * 60 * 1000 * 3; // 3 dias no futuro em milissegundos
+    return dayjs(dateThreeDaysInFuture).format('YYYY-MM-DD');
 }
 
 async function refresh_token() {
