@@ -18,7 +18,7 @@ routes.post('/validate/auth', CustomerController.validate_token);
 routes.post('/password', CustomerController.recovery_password);
 routes.get('/:id', CustomerController.getById);
 routes.post('/:id/address', CustomerController.createAddress);
-routes.put('/:id', CustomerController.update);
+routes.put('/', CustomerController.update);
 routes.delete('/:id', CustomerController.delete);
 routes.get('/', CustomerController.getAll);
 

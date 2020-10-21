@@ -150,6 +150,9 @@ class Order {
 
             clearCustomer(body);
             formatRequest(body);
+
+            if (!body.billing_address) body.billing_address = body.customer.addresses[0];
+
             const orderCreated = await OrderModel.create(body);
             this.setResponse(orderCreated);
             await sendEmail(request.user.email, `Pedido ${orderCreated.id} criado com sucesso!`, template.created_order());

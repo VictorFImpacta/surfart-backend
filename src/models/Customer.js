@@ -289,6 +289,12 @@ class Customer {
 
             formatRequest(data);
 
+            if (data.addresses) {
+                for (const address of addresses) {
+                    addresses.cep = addresses.cep.replace(/\D+/g, '');
+                }
+            }
+
             const customer = await CustomerModel.create(data);
             customer.__v = undefined;
             customer.password = undefined;
@@ -315,8 +321,13 @@ class Customer {
 
             formatRequest(body);
 
+            if (body.addresses) {
+                body.addresses.cep = body.addresses.cep.replace(/\D+/g, '');
+                body.addresses = [body.addresses];
+            }
+
             body.updated_at = new Date();
-            const updatedCustomer = await CustomerModel.create({...user, ...body });
+            const updatedCustomer = await CustomerModel.findByIdAndUpdate(user._id, body);
             updatedCustomer.__v = undefined;
 
             this.setResponse(updatedCustomer);

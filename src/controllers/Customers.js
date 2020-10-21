@@ -51,9 +51,8 @@ module.exports = {
         return res.status(result.statusCode).send(result.result);
     },
     async update(req, res) {
-        // if (req.params.id != req.user.id) return denyAccess(res);
         const customer = new Customer();
-        const result = await customer.update(req.params.id, req.body);
+        const result = await customer.update(req);
         return res.status(result.statusCode).send(result.result);
     },
     async delete(req, res) {
