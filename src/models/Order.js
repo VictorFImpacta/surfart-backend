@@ -10,7 +10,8 @@ const OrderModel = mongoose.model('Order');
 const PicpayModel = mongoose.model('Picpay');
 const CustomerModel = mongoose.model('Customer');
 const SkuModel = mongoose.model('Sku');
-const { decreaseRealStock } = require('../controllers/sku');
+const SkuAppModel = require('../models/Sku');
+const skuAppModel = new SkuAppModel();
 
 const selectString = '-_id -__v';
 
@@ -274,8 +275,8 @@ class Order {
             04510 PAC à vista
             */
 
-            const sedex = formatFreight({...data, serviceCode: '04014' });
-            const pac = formatFreight({...data, serviceCode: '04510' });
+            const sedex = formatFreight({ ...data, serviceCode: '04014' });
+            const pac = formatFreight({ ...data, serviceCode: '04510' });
             let sedexResponse = await make_request(sedex);
             let pacResponse = await make_request(pac);
             sedexResponse = xmlToJson(sedexResponse.body);
@@ -286,7 +287,7 @@ class Order {
                 return this.response();
             }
 
-            const response = [{...sedexResponse, service: 'Sedex' }, {...pacResponse, service: 'Pac' }];
+            const response = [{ ...sedexResponse, service: 'Sedex' }, { ...pacResponse, service: 'Pac' }];
             this.setResponse(response);
 
         } catch (error) {
@@ -296,28 +297,6 @@ class Order {
             return this.response();
         }
     };
-
-    // async updateStatusToPaid(id) {
-
-    //     try {
-
-    //         const order = await OrderModel.findOne({ id });
-
-    //         if (order.status != 'OPEN') {
-    //             this.setResponse({ message: `You cannot update the order status to paid from the current status` }, 400);
-    //             return this.response();
-    //         }
-
-    //         const updatedCategory = await OrderModel.findOneAndUpdate({ id }, { status: 'PAID' }, { new: true });
-    //         this.setResponse(updatedCategory);
-
-    //     } catch (error) {
-    //         console.error('Catch_error: ', error);
-    //         this.setResponse(error, 500);
-    //     } finally {
-    //         return this.response();
-    //     }
-    // };
 
     async updateStatusToSeparated(id) {
 
@@ -333,15 +312,104 @@ class Order {
             const updatedOrder = await OrderModel.findOneAndUpdate({ id }, { status: 'SEPARATED' }, { new: true });
 
             const orderItems = updatedOrder.items.map(sku => {
-                return { id: sku.item.id, quantity: sku.item.quantity - sku.quantity }
+                return { id: sku.item.id, quantity: sku.quantity }
             })
 
             for (const orderItem of orderItems) {
 
-                await decreaseRealStock(orderItem.id, { quantity: orderItem.quantity })
+                await skuAppModel.decreaseRealStock(orderItem.id, { quantity: orderItem.quantity })
             }
 
             this.setResponse(updatedOrder);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    };
+
+    async updateStatusToShipped(id) {
+
+        try {
+
+            const order = await OrderModel.findOne({ id });
+
+            if (order.status != 'SEPARATED') {
+                this.setResponse({ message: `You cannot update the order status to shipped from the current status` }, 400);
+                return this.response();
+            }
+
+            const updatedOrder = await OrderModel.findOneAndUpdate({ id }, { status: 'SHIPPED' }, { new: true });
+            this.setResponse(updatedOrder);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    };
+
+    async updateStatusToFinalized(id) {
+
+        try {
+
+            const order = await OrderModel.findOne({ id });
+
+            if (order.status != 'SHIPPED') {
+                this.setResponse({ message: `You cannot update the order status to finalized from the current status` }, 400);
+                return this.response();
+            }
+
+            const updatedOrder = await OrderModel.findOneAndUpdate({ id }, { status: 'FINALIZED' }, { new: true });
+            this.setResponse(updatedOrder);
+
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    };
+
+    async updateStatusToCanceled(request) {
+
+        try {
+
+            const order = await OrderModel.findOne({ id: request.params.id });
+
+            if (request.user.admin) {
+
+                if (order.status == 'SEPARATED') {
+                    // Voltar as quantidades para o estoque
+
+                    const orderItems = order.items.map(sku => {
+                        return { id: sku.item.id, quantity: sku.quantity }
+                    })
+
+                    for (const orderItem of orderItems) {
+    
+                        await skuAppModel.increaseRealStock(orderItem.id, { quantity: orderItem.quantity })
+                        await skuAppModel.increaseAvailableStock(orderItem.id, { quantity: orderItem.quantity })
+                    }
+                }
+
+                const updatedOrder = await OrderModel.findOneAndUpdate({ id: request.params.id }, { status: 'CANCELED' }, { new: true });
+                this.setResponse(updatedOrder);
+
+            } else {
+
+                if (order.status != 'OPEN') {
+                    this.setResponse({ message: `You cannot update the order status to canceled from the current status` }, 400);
+                    return this.response();
+                }
+
+                const updatedOrder = await OrderModel.findOneAndUpdate({ id }, { status: 'CANCELED' }, { new: true });
+                this.setResponse(updatedOrder);
+
+            }
 
         } catch (error) {
             console.error('Catch_error: ', error);

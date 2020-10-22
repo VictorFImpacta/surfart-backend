@@ -20,7 +20,9 @@ routes.put('/:id', OrderController.update);
 routes.delete('/:id', OrderController.delete);
 routes.get('/', OrderController.getAll);
 
-// routes.put('/status/paid/:id', OrderController.updateStatusToPaid);
 routes.put('/status/separated/:id', OrderController.updateStatusToSeparated);
+routes.put('/status/shipped/:id', OrderController.updateStatusToShipped);
+routes.put('/status/finalized/:id', OrderController.updateStatusToFinalized);
+routes.put('/status/canceled/:id', OrderController.updateStatusToCanceled);
 
 module.exports = routes;
