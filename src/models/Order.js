@@ -83,11 +83,7 @@ class Order {
                 limit = 50;
             }
 
-            let orders = await OrderModel.paginate({ deleted: false, 'customer.customer_id': request.user.user_id }, { page, limit, select: selectString });
-
-            if (request.admin) {
-                orders = await OrderModel.paginate({ page, limit, select: selectString });
-            }
+            const orders = await OrderModel.find({ deleted: false, 'customer.id': request.user.id });
 
             this.setResponse(orders);
 
