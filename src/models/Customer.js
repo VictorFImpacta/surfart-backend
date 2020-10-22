@@ -173,7 +173,9 @@ class Customer {
 
     async validate_token(request) {
         try {
-            this.setResponse({ message: 'success' })
+            const { user } = request;
+            const token = `Bearer ${generateToken({ id: user.id })}`;
+            this.setResponse({ message: 'success', token });
         } catch (error) {
             console.error('Catch_error: ', error);
             this.setResponse(error, 500);
