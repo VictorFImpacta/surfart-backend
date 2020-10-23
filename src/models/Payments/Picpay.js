@@ -4,6 +4,7 @@ mongoose.set('useFindAndModify', false);
 
 const PicpayModel = mongoose.model('Picpay');
 const PicpayRedirectModel = mongoose.model('PicpayRedirect');
+const OrderModel = mongoose.model('Order');
 
 const url = process.env.PICPAY;
 
@@ -64,27 +65,31 @@ class Picpay {
 
     async create(request) {
         let savedRequest;
+        const data = request.body;
+
         try {
-            const data = request.body
             const validRequest = this.validateCreation(data);
 
             if (validRequest.isInvalid) {
                 return this.response();
             }
 
-            data.referenceId = new Date().getTime();
-            data.callbackUrl = undefined;
-            data.returnUrl = undefined;
+            const checkPaymentAlreadyCreated = await PicpayModel.findOne({ orderId: data.orderId });
+            if (checkPaymentAlreadyCreated) {
+                this.setResponse({ message: 'Payment already created for this order' }, 400);
+                return this.response();
+            }
 
-            const sevenDaysInMiliseconds = 24 * 60 * 60 * 1000 * 7 // 7 dias em milissegundos
-            const todayInMiliseconds = new Date().getTime();
+            const order = await OrderModel.findOne({ id: data.orderId });
 
-            data.buyer = request.user;
-            data.expiresAt = new Date(sevenDaysInMiliseconds + todayInMiliseconds);
-            savedRequest = await PicpayModel.create(data);
+            catchCatty(data);
 
+            // Pagamento criado
+            savedRequest = await PicpayModel.create({ value: order.value, ...data });
             const paymentCreated = await postRequest(url, savedRequest);
             console.log('paymentCreated: ', paymentCreated);
+
+            // Redirecionamento do pagamento criado
             const redirectCreated = await PicpayRedirectModel.create(paymentCreated);
             console.log('paymentCreated: ', redirectCreated);
 
@@ -132,6 +137,16 @@ class Picpay {
             return this.response();
         }
     };
+}
+
+function catchCatty(data) {
+    const sevenDaysInMiliseconds = 24 * 60 * 60 * 1000 * 7 // 7 dias em milissegundos
+    const todayInMiliseconds = new Date().getTime();
+    data.expiresAt = new Date(sevenDaysInMiliseconds + todayInMiliseconds);
+    data.referenceId = new Date().getTime();
+    data.callbackUrl = undefined;
+    data.returnUrl = undefined;
+    data.buyer = request.user;
 }
 
 function postRequest(url, body) {

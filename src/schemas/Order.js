@@ -67,6 +67,12 @@ const OrderSchema = new mongoose.Schema({
         uppercase: true,
         enum: ['OPEN', 'PAID', 'SEPARATED', 'SHIPPED', 'FINALIZED', 'CANCELED'],
         default: 'OPEN'
+    },
+    paymentType: {
+        enum: ['picpay', 'boleto'],
+        type: String,
+        lowercase: true,
+        required: true
     }
 });
 

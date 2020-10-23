@@ -15,7 +15,7 @@ const PicpaySchema = new mongoose.Schema({
     },
     returnUrl: {
         type: String,
-        default: 'http://www.surfartstore.com/cart'
+        default: 'http://localhost:4200/produtos'
     },
     value: {
         type: String,

@@ -2,6 +2,7 @@ require('../schemas/Payments/Picpay/PicpayOrder');
 require('../schemas/Payments/Picpay/PicpayRedirect');
 require('../schemas/Payments/Juno/JunoOrder');
 require('../schemas/Payments/Juno/JunoRedirect');
+require('../schemas/Order');
 
 const AuthenticateMiddleware = require('../middlewares/auth');
 const Picpay_PaymentController = require('../controllers/Payments/Picpay');
