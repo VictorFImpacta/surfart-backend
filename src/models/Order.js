@@ -141,7 +141,7 @@ class Order {
             body.value = 0;
 
             for (const item of body.items) {
-                body.value += item.item.price * item.quantity;
+                body.value += item.item.price * item.productQuantity;
             }
 
             body.customer = request.user;
@@ -271,8 +271,8 @@ class Order {
             04510 PAC à vista
             */
 
-            const sedex = formatFreight({ ...data, serviceCode: '04014' });
-            const pac = formatFreight({ ...data, serviceCode: '04510' });
+            const sedex = formatFreight({...data, serviceCode: '04014' });
+            const pac = formatFreight({...data, serviceCode: '04510' });
             let sedexResponse = await make_request(sedex);
             let pacResponse = await make_request(pac);
             sedexResponse = xmlToJson(sedexResponse.body);
@@ -283,7 +283,7 @@ class Order {
                 return this.response();
             }
 
-            const response = [{ ...sedexResponse, service: 'Sedex' }, { ...pacResponse, service: 'Pac' }];
+            const response = [{...sedexResponse, service: 'Sedex' }, {...pacResponse, service: 'Pac' }];
             this.setResponse(response);
 
         } catch (error) {
@@ -386,7 +386,7 @@ class Order {
                     })
 
                     for (const orderItem of orderItems) {
-    
+
                         await skuAppModel.increaseRealStock(orderItem.id, { quantity: orderItem.quantity })
                         await skuAppModel.increaseAvailableStock(orderItem.id, { quantity: orderItem.quantity })
                     }
