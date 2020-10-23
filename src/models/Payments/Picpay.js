@@ -82,12 +82,10 @@ class Picpay {
 
             const order = await OrderModel.findOne({ id: data.orderId });
 
-            catchCatty(data);
-
+            catchCatty(data, request);
             // Pagamento criado
             savedRequest = await PicpayModel.create({ value: order.value, ...data });
             const paymentCreated = await postRequest(url, savedRequest);
-            console.log('paymentCreated: ', paymentCreated);
 
             // Redirecionamento do pagamento criado
             const redirectCreated = await PicpayRedirectModel.create(paymentCreated);
@@ -139,14 +137,21 @@ class Picpay {
     };
 }
 
-function catchCatty(data) {
+function catchCatty(data, request) {
     const sevenDaysInMiliseconds = 24 * 60 * 60 * 1000 * 7 // 7 dias em milissegundos
     const todayInMiliseconds = new Date().getTime();
     data.expiresAt = new Date(sevenDaysInMiliseconds + todayInMiliseconds);
     data.referenceId = new Date().getTime();
     data.callbackUrl = undefined;
     data.returnUrl = undefined;
-    data.buyer = request.user;
+
+    const user = {
+        first_name: request.user.first_name,
+        last_name: request.user.last_name,
+        email: request.user.email,
+    }
+
+    data.buyer = {...user, document: data.document, phone: data.customer.phone };
 }
 
 function postRequest(url, body) {

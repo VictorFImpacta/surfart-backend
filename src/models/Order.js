@@ -141,7 +141,7 @@ class Order {
             body.value = 0;
 
             for (const item of body.items) {
-                body.value += item.item.price * item.item.productQuantity;
+                body.value += item.item.price * item.quantity;
             }
 
             body.customer = request.user;
@@ -440,7 +440,7 @@ class Order {
         const response = new Array();
         body.items.forEach(item => {
             products.find(data => {
-                if (data._id == item._id) item = { item: data, quantity: item.quantity }
+                if (data._id == item._id) item = { item: data, quantity: item.productQuantity }
             })
             response.push(item);
         });
