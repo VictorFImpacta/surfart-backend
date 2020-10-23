@@ -48,14 +48,24 @@ module.exports = {
         const result = await order.createAddress(req.params.id, req.body);
         return res.status(result.statusCode).send(result.result);
     },
-    // async updateStatusToPaid(req, res) {
-    //     const order = new Order();
-    //     const result = await order.updateStatusToPaid(req.params.id);
-    //     return res.status(result.statusCode).send(result.result);
-    // },
     async updateStatusToSeparated(req, res) {
         const order = new Order();
-        const result = await order.updateStatusToPaid(req.params.id);
+        const result = await order.updateStatusToSeparated(req.params.id);
+        return res.status(result.statusCode).send(result.result);
+    },
+    async updateStatusToShipped(req, res) {
+        const order = new Order();
+        const result = await order.updateStatusToShipped(req.params.id);
+        return res.status(result.statusCode).send(result.result);
+    },
+    async updateStatusToFinalized(req, res) {
+        const order = new Order();
+        const result = await order.updateStatusToFinalized(req.params.id);
+        return res.status(result.statusCode).send(result.result);
+    },
+    async updateStatusToCanceled(req, res) {
+        const order = new Order();
+        const result = await order.updateStatusToCanceled(req);
         return res.status(result.statusCode).send(result.result);
     },
     async viacep(req, res) {
