@@ -141,7 +141,7 @@ class Order {
             body.value = 0;
 
             for (const item of body.items) {
-                body.value += item.item.price * item.productQuantity;
+                body.value += item.item.price * item.item.productQuantity;
             }
 
             body.customer = request.user;
