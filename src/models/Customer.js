@@ -181,7 +181,7 @@ class Customer {
                 return this.response();
             }
 
-            console.log({ request: body, customer });
+            console.log({ request: body, customer })
 
             user.password = body.new_password;
             const updated_password = await CustomerModel.create(user);
