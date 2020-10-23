@@ -90,7 +90,7 @@ class Customer {
         }
     }
 
-    async recovery_validate(request) {
+    async recoveryValidate(request) {
         try {
 
             const { recovery_check } = request.params;
@@ -133,7 +133,7 @@ class Customer {
         }
     }
 
-    async recovery_password(request) {
+    async recoveryPassword(request) {
         try {
             const { body, user } = request;
 
@@ -171,7 +171,35 @@ class Customer {
         }
     }
 
-    async validate_token(request) {
+    async updatePassword(request) {
+        try {
+            const { body, user } = request;
+
+            if (!body.new_password) {
+                this.setResponse({ message: 'Please, fill in all required fields' }, 400);
+                return this.response();
+            }
+
+            console.log({ request: body, customer });
+
+            user.password = body.new_password;
+            const updated_password = await CustomerModel.create(user);
+
+            if (!updated_password) {
+                this.setResponse({ message: 'An error has ocurred' }, 500);
+                return this.response();
+            }
+
+            this.setResponse({ message: 'success' }, 200);
+        } catch (error) {
+            console.error('Catch_error: ', error);
+            this.setResponse(error, 500);
+        } finally {
+            return this.response();
+        }
+    }
+
+    async validateToken(request) {
         try {
             const { user } = request;
             const token = `Bearer ${generateToken({ id: user.id })}`;

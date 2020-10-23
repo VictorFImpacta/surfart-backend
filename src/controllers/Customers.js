@@ -19,15 +19,21 @@ module.exports = {
         const result = await customer.getById(req.params.id);
         return res.status(result.statusCode).send(result.result);
     },
-    async recovery_password(req, res) {
+    async recoveryPassword(req, res) {
         // if (req.params.id != req.user.id) return denyAccess(res);
         const customer = new Customer();
-        const result = await customer.recovery_password(req);
+        const result = await customer.recoveryPassword(req);
         return res.status(result.statusCode).send(result.result);
     },
-    async validate_token(req, res) {
+    async updatePassword(req, res) {
+        // if (req.params.id != req.user.id) return denyAccess(res);
         const customer = new Customer();
-        const result = await customer.validate_token(req);
+        const result = await customer.updatePassword(req);
+        return res.status(result.statusCode).send(result.result);
+    },
+    async validateToken(req, res) {
+        const customer = new Customer();
+        const result = await customer.validateToken(req);
         return res.status(result.statusCode).send(result.result);
     },
     async recovery(req, res) {
@@ -35,9 +41,9 @@ module.exports = {
         const result = await customer.recovery(req.body);
         return res.status(result.statusCode).send(result.result);
     },
-    async recovery_validate(req, res) {
+    async recoveryValidate(req, res) {
         const customer = new Customer();
-        const result = await customer.recovery_validate(req);
+        const result = await customer.recoveryValidate(req);
         return res.status(result.statusCode).send(result.result);
     },
     async auth(req, res) {
