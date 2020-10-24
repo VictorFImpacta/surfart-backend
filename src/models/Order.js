@@ -435,12 +435,12 @@ class Order {
 
     async validateItems(body) {
 
-        const _ids = body.items.map(item => item._id);
-        const products = await SkuModel.find({ _id: _ids });
+        const ids = body.items.map(item => item.id);
+        const products = await SkuModel.find({ id: ids });
         const response = new Array();
         body.items.forEach(item => {
             products.find(data => {
-                if (data._id == item._id) item = { item: data, quantity: item.productQuantity }
+                if (data.id == item.id) item = { item: data, quantity: item.quantity }
             })
             response.push(item);
         });
