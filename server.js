@@ -9,10 +9,6 @@ module.exports = async(databaseEnvironment) => {
     const app = express();
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(cors({
-        origin: 'https://surfartbrazil.herokuapp.com',
-        optionsSuccessStatus: 200
-    }));
     app.use(formData.parse());
 
     app.use((req, res, next) => {
@@ -20,6 +16,7 @@ module.exports = async(databaseEnvironment) => {
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
         next();
     })
+    app.use(cors());
 
     if (databaseEnvironment == 'homolog')
         dataBase.initializeDatabaseHomolog()
