@@ -12,11 +12,11 @@ module.exports = async(databaseEnvironment) => {
     app.use(formData.parse());
 
     app.use((req, res, next) => {
-        res.header('Access-Control-Allow-Origin', 'https://surfartbrazil.herokuapp.com');
-        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+        if (req.headers.host == 'surf-art-homolog.herokuapp.com')
+            res.header('Access-Control-Allow-Origin', '*');
         next();
+        app.use(cors());
     })
-    app.use(cors());
 
     if (databaseEnvironment == 'homolog')
         dataBase.initializeDatabaseHomolog()
