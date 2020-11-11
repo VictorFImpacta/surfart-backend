@@ -12,9 +12,11 @@ module.exports = async(databaseEnvironment) => {
     app.use(formData.parse());
 
     app.use((req, res, next) => {
-        res.header('Access-Control-Allow-Origin', '*');
-        next();
+        if (req.headers.host == 'surf-art-homolog.herokuapp.com') {
+            res.header('Access-Control-Allow-Origin', '*');
+        }
         app.use(cors());
+        next();
     })
 
     if (databaseEnvironment == 'homolog')
