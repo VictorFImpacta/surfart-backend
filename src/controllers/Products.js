@@ -4,7 +4,6 @@ module.exports = {
     async getAll(req, res) {
         const product = new Product();
         const result = await product.getAll(req.query);
-        res.setHeader('Access-Control-Allow-Origin', '*');
         return res.status(result.statusCode).send(result.result);
     },
     async list(req, res) {

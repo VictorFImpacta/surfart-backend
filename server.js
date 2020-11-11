@@ -13,7 +13,13 @@ module.exports = async(databaseEnvironment) => {
         origin: 'https://surfartbrazil.herokuapp.com',
         optionsSuccessStatus: 200
     }));
-    app.use(formData.parse())
+    app.use(formData.parse());
+
+    app.use((req, res, next) => {
+        res.header('Access-Control-Allow-Origin', 'https://surfartbrazil.herokuapp.com');
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+        next();
+    })
 
     if (databaseEnvironment == 'homolog')
         dataBase.initializeDatabaseHomolog()
