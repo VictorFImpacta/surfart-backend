@@ -15,7 +15,7 @@ const PicpaySchema = new mongoose.Schema({
     },
     returnUrl: {
         type: String,
-        default: 'http://localhost:4200/produtos'
+        default: 'https://surfartbrazil.herokuapp.com/pedidos'
     },
     value: {
         type: String,
