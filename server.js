@@ -13,9 +13,9 @@ module.exports = async(databaseEnvironment) => {
 
     app.use((req, res, next) => {
         res.header('Access-Control-Allow-Origin', '*');
-        app.use(cors());
         next();
     })
+    app.use(cors());
 
     if (databaseEnvironment == 'homolog')
         dataBase.initializeDatabaseHomolog()
