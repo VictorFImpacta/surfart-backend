@@ -9,7 +9,7 @@ module.exports = async(databaseEnvironment) => {
     const app = express();
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(cors({ origin: '*' }));
+    app.use(cors({ origin: 'https://surfartbrazil.herokuapp.com', optionsSuccessStatus: 200 }));
     app.use(formData.parse())
 
     if (databaseEnvironment == 'homolog')
