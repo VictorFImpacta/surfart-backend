@@ -4,6 +4,10 @@ module.exports = {
     async getAll(req, res) {
         const product = new Product();
         const result = await product.getAll(req.query);
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        // res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); // If needed
+        // res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type'); // If needed
+        // res.setHeader('Access-Control-Allow-Credentials', true); // If needed
         return res.status(result.statusCode).send(result.result);
     },
     async list(req, res) {

@@ -11,7 +11,7 @@ routes.get('/', SkuController.getAll);
 routes.get('/:id', SkuController.getById);
 
 // Rota autenticada
-// routes.use(AuthenticateMiddleware);
+routes.use(AuthenticateMiddleware);
 routes.post('/', SkuController.create);
 routes.post('/image', SkuController.uploadImage);
 routes.put('/:id', SkuController.update);
