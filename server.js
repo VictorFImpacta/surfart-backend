@@ -10,7 +10,8 @@ module.exports = async(databaseEnvironment) => {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(cors({
-        'Access-Control-Allow-Origin': 'https://surfartbrazil.herokuapp.com'
+        origin: 'https://surfartbrazil.herokuapp.com',
+        optionsSuccessStatus: 200
     }));
     app.use(formData.parse())
 
