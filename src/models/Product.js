@@ -59,6 +59,11 @@ class Product {
         try {
 
             const query = queryFormater({ searchBy });
+            query.push({
+                $match: {
+                    deleted: false
+                }
+            })
 
             const products = await ProductModel.aggregate(query);
 
@@ -80,6 +85,11 @@ class Product {
             }
 
             const query = queryFormater({ page, limit, category });
+            query.push({
+                $match: {
+                    deleted: false
+                }
+            })
 
             const products = await ProductModel.aggregate(query);
 
