@@ -10,7 +10,7 @@ routes.get('/', CategoryController.list);
 routes.get('/:id', CategoryController.getById);
 
 // Rota autenticada
-routes.use(AuthenticateMiddleware);
+// routes.use(AuthenticateMiddleware);
 routes.post('/', CategoryController.create);
 routes.put('/:id', CategoryController.update);
 routes.delete('/:id', CategoryController.delete);
