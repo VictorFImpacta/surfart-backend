@@ -13,7 +13,7 @@ routes.get('/', ProductController.list);
 routes.get('/:id', ProductController.getById);
 
 // Rota autenticada
-// routes.use(AuthenticateMiddleware);
+routes.use(AuthenticateMiddleware);
 routes.post('/', ProductController.create);
 routes.put('/:id', ProductController.update);
 routes.delete('/:id', ProductController.delete);
