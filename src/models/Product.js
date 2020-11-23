@@ -67,6 +67,14 @@ class Product {
 
             const products = await ProductModel.aggregate(query);
 
+            for (const product of products) {
+                const variants = new Array();
+                for (const variant of product.variants)
+                    if (!variant.deleted)
+                        variants.push(variant);
+                product.variants = variants;
+            }
+
             this.setResponse({ docs: products });
 
         } catch (error) {
