@@ -26,7 +26,7 @@ module.exports = {
         return res.status(result.statusCode).send(result.result);
     },
     async updatePassword(req, res) {
-        if (req.params.id != req.user.id) return denyAccess(res);
+        // if (req.params.id != req.user.id) return denyAccess(res);
         const customer = new Customer();
         const result = await customer.updatePassword(req);
         return res.status(result.statusCode).send(result.result);
