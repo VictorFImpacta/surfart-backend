@@ -11,11 +11,11 @@ routes.post('/', CustomerController.create);
 routes.post('/auth', CustomerController.auth);
 routes.post('/recovery', CustomerController.recovery);
 routes.post('/recovery/:recovery_check', CustomerController.recoveryValidate);
+routes.post('/password', CustomerController.updatePassword);
 
 // Rota autenticada
 routes.use(AuthenticateMiddleware);
 routes.post('/validate/auth', CustomerController.validateToken);
-routes.post('/password', CustomerController.updatePassword);
 routes.put('/password', CustomerController.recoveryPassword);
 routes.get('/:id', CustomerController.getById);
 routes.post('/:id/address', CustomerController.createAddress);
