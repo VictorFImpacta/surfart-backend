@@ -9,6 +9,8 @@ const routes = express.Router();
 
 routes.get('/', SkuController.getAll);
 routes.get('/:id', SkuController.getById);
+routes.put('/stock/available/decrease/:id', SkuController.decreaseAvailableStock);
+routes.put('/stock/available/increase/:id', SkuController.increaseAvailableStock);
 
 // Rota autenticada
 routes.use(AuthenticateMiddleware);
@@ -18,8 +20,6 @@ routes.put('/:id', SkuController.update);
 routes.delete('/:id', SkuController.delete);
 
 // Stocks
-routes.put('/stock/available/decrease/:id', SkuController.decreaseAvailableStock);
-routes.put('/stock/available/increase/:id', SkuController.increaseAvailableStock);
 routes.put('/stock/real/decrease/:id', SkuController.decreaseRealStock);
 routes.put('/stock/real/increase/:id', SkuController.increaseRealStock);
 

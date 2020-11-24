@@ -79,6 +79,7 @@ class Customer {
             const recovery = await RecoveryModel.create({ email, recovery_code });
 
             await sendEmail(email, 'Recuperação de senha - SurfArt', template.recovery(recovery_code));
+            console.log({ recovery_code })
 
             this.setResponse({ email: recovery.email, recovery_check: recovery.recovery_check });
 
