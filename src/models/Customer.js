@@ -175,6 +175,7 @@ class Customer {
     async updatePassword(request) {
         try {
             const { body, user } = request;
+            console.log({ user })
 
             if (!body.new_password) {
                 this.setResponse({ message: 'Please, fill in all required fields' }, 400);
