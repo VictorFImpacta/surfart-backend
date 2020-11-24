@@ -12,7 +12,7 @@ routes.get('/:id', SkuController.getById);
 routes.put('/stock/available/decrease/:id', SkuController.decreaseAvailableStock);
 routes.put('/stock/available/increase/:id', SkuController.increaseAvailableStock);
 
-// Rota autenticada
+//Rota autenticada
 routes.use(AuthenticateMiddleware);
 routes.post('/', SkuController.create);
 routes.post('/image', SkuController.uploadImage);
